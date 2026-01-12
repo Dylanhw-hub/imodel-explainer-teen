@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 
 const labels = ['Integrity', 'Intuition', 'Inquiry', 'Intentionality'];
 const colors: Record<string, string> = {
-  Integrity: '#818cf8',
-  Intuition: '#a78bfa',
-  Inquiry: '#c084fc',
-  Intentionality: '#e879f9'
+  Intentionality: '#06b6d4', // Cyan
+  Integrity: '#10b980',      // Emerald Green
+  Inquiry: '#f59e0b',        // Amber
+  Intuition: '#f43f5e'       // Rose/Pink
 };
 
 interface IModeData {
@@ -58,17 +58,17 @@ export default function IModelExplainer() {
   const [nearLock, setNearLock] = useState<boolean>(false);
   const [activeReveal, setActiveReveal] = useState<RevealType>(null);
 
-  // Layout constants - Shifted further right
-  const webCenterX = dimensions.width - 200; // Shifted from 350 to 200 from right edge
+  // Layout constants
+  const webCenterX = dimensions.width - 200;
   const webCenterY = dimensions.height / 2;
   const radius = 90;
-  const lockZone = { x: dimensions.width * 0.45, y: dimensions.height / 2 }; // Shifted lock zone right (0.35 to 0.45)
+  const lockZone = { x: dimensions.width * 0.50, y: dimensions.height / 2 }; 
   const lockRadius = 60;
-  const revealDetectionRadius = 100;
+  const revealDetectionRadius = 110;
 
   const getRevealZones = () => [
-    { id: 'feelsLike' as const, label: 'Feels Like', y: lockZone.y - 85, x: lockZone.x - 120 },
-    { id: 'whenYouUseIt' as const, label: 'When You Use It', y: lockZone.y + 85, x: lockZone.x - 120 }
+    { id: 'feelsLike' as const, label: 'Feels Like', y: lockZone.y - 100, x: lockZone.x - 140 },
+    { id: 'whenYouUseIt' as const, label: 'When You Use It', y: lockZone.y + 100, x: lockZone.x - 140 }
   ];
 
   useEffect(() => {
@@ -127,20 +127,7 @@ export default function IModelExplainer() {
     if (locked) {
       const lockedPositions = getTargetPositions(locked);
       if (dragging === locked && dragPos) {
-        let finalPos = dragPos;
-        getRevealZones().forEach(zone => {
-          const dx = dragPos.x - zone.x;
-          const dy = dragPos.y - zone.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < revealDetectionRadius) {
-            const weight = 0.4 * (1 - dist / revealDetectionRadius);
-            finalPos = {
-              x: dragPos.x + (zone.x - dragPos.x) * weight,
-              y: dragPos.y + (zone.y - dragPos.y) * weight
-            };
-          }
-        });
-        lockedPositions[locked] = finalPos;
+        lockedPositions[locked] = dragPos;
       } else if (activeReveal) {
         const zone = getRevealZones().find(z => z.id === activeReveal);
         if (zone) lockedPositions[locked] = { x: zone.x, y: zone.y };
@@ -208,7 +195,22 @@ export default function IModelExplainer() {
         const zdist = Math.sqrt(zdx * zdx + zdy * zdy);
         if (zdist < revealDetectionRadius) foundZone = zone.id;
       });
-      setActiveReveal(foundZone);
+
+      if (foundZone) {
+        setActiveReveal(foundZone);
+      } else {
+        if (activeReveal) {
+          const currentZone = getRevealZones().find(z => z.id === activeReveal);
+          if (currentZone) {
+            const czdx = newPos.x - currentZone.x;
+            const czdy = newPos.y - currentZone.y;
+            const czdist = Math.sqrt(czdx * czdx + czdy * czdy);
+            if (czdist > revealDetectionRadius * 1.5) {
+              setActiveReveal(null);
+            }
+          }
+        }
+      }
     }
   };
 
@@ -260,8 +262,10 @@ export default function IModelExplainer() {
   const getLineStyle = (a: string, b: string) => {
     const isActive = dragging && (a === dragging || b === dragging);
     const isLocked = locked && (a === locked || b === locked);
+    const currentColor = dragging ? colors[dragging] : (locked ? colors[locked] : '#475569');
+    
     return {
-      stroke: isActive ? colors[dragging!] : isLocked ? colors[locked!] : '#475569',
+      stroke: isActive || isLocked ? currentColor : '#475569',
       strokeWidth: isActive || isLocked ? 2 : 1,
       opacity: isActive || isLocked ? 0.8 : 0.25,
     };
@@ -306,14 +310,14 @@ export default function IModelExplainer() {
                     : 'transparent'
                 : nearLock && dragging
                     ? `radial-gradient(circle, ${colors[dragging]}30 0%, transparent 65%)`
-                    : 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 65%)',
+                    : 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 65%)',
               transition: 'all 0.3s ease',
               opacity: locked && dragging === locked && !nearLock ? 0.2 : 1
             }}
           />
           {!locked && (
             <div className="absolute rounded-full flex items-center justify-center" 
-                 style={{ width: 100, height: 100, left: '50%', top: '50%', transform: 'translate(-50%, -50%)', border: '1.5px solid rgba(99,102,241,0.3)' }}>
+                 style={{ width: 100, height: 100, left: '50%', top: '50%', transform: 'translate(-50%, -50%)', border: '1.5px solid rgba(255,255,255,0.1)' }}>
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Explore</span>
             </div>
           )}
@@ -324,7 +328,7 @@ export default function IModelExplainer() {
           <div 
             className="absolute z-50 pointer-events-none animate-revealFloating"
             style={{ 
-              left: lockZone.x - 320, // Increased gap from lock zone
+              left: lockZone.x - 340, 
               top: lockZone.y, 
               transform: 'translate(-50%, -50%)',
               width: '320px'
@@ -428,74 +432,4 @@ export default function IModelExplainer() {
                 style={{
                   width: isLead ? 72 : 56, height: isLead ? 72 : 56,
                   fontSize: isLead ? 24 : 18, backgroundColor: colors[label],
-                  boxShadow: `0 0 ${isLead ? 40 : 20}px ${colors[label]}${isLead ? '70' : '50'}`,
-                  transition: 'all 0.2s ease', fontFamily: 'Georgia, serif',
-                }}
-              >
-                I
-              </div>
-              <span className="mt-2 text-xs font-medium tracking-wide text-slate-400 opacity-80">{label}</span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Info Panel (Always Core Definition) */}
-      <div className="px-4 pb-8 shrink-0 relative z-20 min-h-[220px] flex flex-col justify-end">
-        {locked && (
-          <div
-            className="rounded-xl p-8 animate-fadeIn w-full max-w-2xl mx-auto backdrop-blur-md"
-            style={{ 
-              background: 'rgba(15, 23, 42, 0.9)',
-              border: `1px solid ${colors[locked]}40`,
-              boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 0 20px ${colors[locked]}10`,
-            }}
-          >
-            <div className="flex items-center gap-3 mb-4 transition-all duration-300">
-              <div className="w-2 h-8 rounded-full" style={{ backgroundColor: colors[locked] }} />
-              <h2 className="text-xl font-bold tracking-tight uppercase" style={{ color: colors[locked] }}>{locked} Mode</h2>
-            </div>
-
-            <div className="min-h-[100px] flex flex-col justify-center">
-              <div key="whatItIs" className="animate-revealText">
-                <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-2">
-                  Core Definition
-                </h3>
-                <p className="text-base leading-relaxed text-slate-200 font-light">
-                  {explanations[locked].whatItIs}
-                </p>
-                {!activeReveal && (
-                  <p className="mt-4 text-[10px] text-slate-400 italic tracking-widest uppercase">
-                    Drag the {locked} circle left to see "Feels Like" or "When You Use It"
-                  </p>
-                )}
-              </div>
-            </div>
-            
-            <p className="mt-6 text-[10px] font-bold text-center tracking-[0.3em] uppercase text-indigo-400/60">
-                ⟵ Drag another I-Mode to explore
-            </p>
-          </div>
-        )}
-      </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes revealText {
-          from { opacity: 0; transform: translateX(-15px); filter: blur(6px); }
-          to { opacity: 1; transform: translateX(0); filter: blur(0); }
-        }
-        @keyframes revealFloating {
-          from { opacity: 0; transform: translate(-45%, -50%) scale(0.95); filter: blur(4px); }
-          to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
-        }
-        .animate-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
-        .animate-revealText { animation: revealText 0.3s ease-out forwards; }
-        .animate-revealFloating { animation: revealFloating 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-      `}</style>
-    </div>
-  );
-}
+                  boxShadow: `0 
