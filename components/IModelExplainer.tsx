@@ -22,12 +22,12 @@ const explanations: Record<string, IModeData> = {
   },
   Integrity: {
     feelsLike: "Confidence that you can stand behind your choices; no ethical discomfort",
-    whatItIs: "Ensuring ethical, honest, and appropriate use. This is the mode of using AI honestly and responsibly—being transparent about its role, taking accountability for outputs, ensuring alignment with your values.",
+    whatItIs: "Ensuring ethical, honest, and appropriate use. This is the mode of using AI honestly and responsibly—being transparent about its role, taking responsibility for outputs, and ensuring alignment with your values.",
     whenYouUseIt: "When there are stakes—'Is this still my work?' 'Should I disclose I used AI?'"
   },
   Inquiry: {
     feelsLike: "Engaged curiosity; critically examining rather than passively accepting",
-    whatItIs: "Critical examination and quality checking. This is the mode of active questioning—prompting well, evaluating outputs critically, probing deeper when needed. Good inquiry means staying curious about both what AI produces and how you're working with it.",
+    whatItIs: "Critical examination and quality checking. This is the mode of asking good questions, evaluating outputs carefully, and probing deeper. It means staying curious about both what AI produces and how you're using it.",
     whenYouUseIt: "While working—'Is this actually what I asked for?' 'Does this match my needs?'"
   },
   Intuition: {
@@ -399,7 +399,7 @@ export default function IModelExplainer() {
               {activeReveal ? (
                 <div key={activeReveal} className="animate-revealText">
                   <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-2">
-                    {activeReveal === 'feelsLike' ? 'Experiential Lens' : 'Contextual Use'}
+                    {activeReveal === 'feelsLike' ? 'Feels Like' : 'When You Use It'}
                   </h3>
                   <p className="text-lg leading-relaxed text-slate-100 font-light italic">
                     {explanations[locked][activeReveal]}
@@ -414,7 +414,7 @@ export default function IModelExplainer() {
                     {explanations[locked].whatItIs}
                   </p>
                   <p className="mt-4 text-xs text-slate-400 italic">
-                    Drag the {locked} circle to the left to reveal more details...
+                    Drag the {locked} circle left to see how it feels and when to use it
                   </p>
                 </div>
               )}
