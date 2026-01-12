@@ -127,10 +127,11 @@ export default function IModelExplainer() {
     if (locked) {
       const lockedPositions = getTargetPositions(locked);
       if (dragging === locked && dragPos) {
+        // While dragging, follow pointer exactly
         lockedPositions[locked] = dragPos;
-      } else if (activeReveal) {
-        const zone = getRevealZones().find(z => z.id === activeReveal);
-        if (zone) lockedPositions[locked] = { x: zone.x, y: zone.y };
+      } else {
+        // When not dragging, lead label always returns to lockZone center (Bounce-back)
+        lockedPositions[locked] = { x: lockZone.x, y: lockZone.y };
       }
       return lockedPositions;
     }
@@ -198,16 +199,15 @@ export default function IModelExplainer() {
 
       if (foundZone) {
         setActiveReveal(foundZone);
-      } else {
-        if (activeReveal) {
-          const currentZone = getRevealZones().find(z => z.id === activeReveal);
-          if (currentZone) {
-            const czdx = newPos.x - currentZone.x;
-            const czdy = newPos.y - currentZone.y;
-            const czdist = Math.sqrt(czdx * czdx + czdy * czdy);
-            if (czdist > revealDetectionRadius * 1.5) {
-              setActiveReveal(null);
-            }
+      } else if (activeReveal) {
+        // Sticky behavior: Only deactivate if user drags significantly away from the current active zone
+        const currentZone = getRevealZones().find(z => z.id === activeReveal);
+        if (currentZone) {
+          const czdx = newPos.x - currentZone.x;
+          const czdy = newPos.y - currentZone.y;
+          const czdist = Math.sqrt(czdx * czdx + czdy * czdy);
+          if (czdist > revealDetectionRadius * 1.5) {
+            setActiveReveal(null);
           }
         }
       }
@@ -232,11 +232,14 @@ export default function IModelExplainer() {
           });
 
           if (releasedZoneId) {
+            // Success: Keep reveal active but circle bounces back (handled in getPositions)
             setActiveReveal(releasedZoneId);
           } else if (dist > lockRadius * 3 || dragPos.x > lockZone.x + 200) {
+            // Unlocking path
             setLocked(null);
             setActiveReveal(null);
           } else {
+            // Neutral release: Bounce back to center, hide reveal
             setActiveReveal(null);
           }
         } else {
@@ -271,10 +274,8 @@ export default function IModelExplainer() {
     };
   };
 
-  const transition = locked && dragging === locked ? 'none' : 
-                     locked ? 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' : 
-                     dragging ? 'all 0.08s ease-out' : 
-                     'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  // Ensure "locked" transition is applied to bounce-back animation
+  const transition = dragging ? 'none' : 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative" style={{ background: 'linear-gradient(to bottom, #0f172a, #1e1b4b)' }}>
@@ -432,4 +433,74 @@ export default function IModelExplainer() {
                 style={{
                   width: isLead ? 72 : 56, height: isLead ? 72 : 56,
                   fontSize: isLead ? 24 : 18, backgroundColor: colors[label],
-                  boxShadow: `0 
+                  boxShadow: `0 0 ${isLead ? 40 : 20}px ${colors[label]}${isLead ? '70' : '50'}`,
+                  transition: 'all 0.2s ease', fontFamily: 'Georgia, serif',
+                }}
+              >
+                I
+              </div>
+              <span className="mt-2 text-xs font-medium tracking-wide text-slate-400 opacity-80">{label}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Info Panel (Always Core Definition) */}
+      <div className="px-4 pb-8 shrink-0 relative z-20 min-h-[220px] flex flex-col justify-end">
+        {locked && (
+          <div
+            className="rounded-xl p-8 animate-fadeIn w-full max-w-2xl mx-auto backdrop-blur-md"
+            style={{ 
+              background: 'rgba(15, 23, 42, 0.9)',
+              border: `1px solid ${colors[locked]}40`,
+              boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 0 20px ${colors[locked]}10`,
+            }}
+          >
+            <div className="flex items-center gap-3 mb-4 transition-all duration-300">
+              <div className="w-2 h-8 rounded-full" style={{ backgroundColor: colors[locked] }} />
+              <h2 className="text-xl font-bold tracking-tight uppercase" style={{ color: colors[locked] }}>{locked} Mode</h2>
+            </div>
+
+            <div className="min-h-[100px] flex flex-col justify-center">
+              <div key="whatItIs" className="animate-revealText">
+                <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-2">
+                  Core Definition
+                </h3>
+                <p className="text-base leading-relaxed text-slate-200 font-light">
+                  {explanations[locked].whatItIs}
+                </p>
+                {!activeReveal && (
+                  <p className="mt-4 text-[10px] text-slate-400 italic tracking-widest uppercase">
+                    Drag the {locked} circle left to see "Feels Like" or "When You Use It"
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            <p className="mt-6 text-[10px] font-bold text-center tracking-[0.3em] uppercase text-slate-500/60">
+                ⟵ Drag another I-Mode to explore
+            </p>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes revealText {
+          from { opacity: 0; transform: translateX(-15px); filter: blur(6px); }
+          to { opacity: 1; transform: translateX(0); filter: blur(0); }
+        }
+        @keyframes revealFloating {
+          from { opacity: 0; transform: translate(-45%, -50%) scale(0.95); filter: blur(4px); }
+          to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+        .animate-revealText { animation: revealText 0.3s ease-out forwards; }
+        .animate-revealFloating { animation: revealFloating 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+      `}</style>
+    </div>
+  );
+}
