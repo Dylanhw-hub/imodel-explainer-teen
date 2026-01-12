@@ -59,13 +59,12 @@ export default function IModelExplainer() {
   const [activeReveal, setActiveReveal] = useState<RevealType>(null);
 
   // Layout constants - Shifted right for better balance
-  const webCenterX = dimensions.width - 350; // Moved further right from 250
+  const webCenterX = dimensions.width - 350;
   const webCenterY = dimensions.height / 2;
   const radius = 90;
-  const lockZone = { x: dimensions.width * 0.35, y: dimensions.height / 2 }; // Relative positioning
+  const lockZone = { x: dimensions.width * 0.35, y: dimensions.height / 2 };
   const lockRadius = 60;
 
-  // Reduced to 2 Reveal Zones: Feels Like and When You Use It
   const getRevealZones = () => [
     { id: 'feelsLike' as const, label: '← Feels Like', y: lockZone.y - 70 },
     { id: 'whenYouUseIt' as const, label: '← When You Use It', y: lockZone.y + 70 }
@@ -114,7 +113,6 @@ export default function IModelExplainer() {
     const neighbor1Label = labels[neighborIndices[0]];
     const neighbor2Label = labels[neighborIndices[1]];
 
-    // Spread nodes out slightly more to the right
     return {
       [leadLabel]: { x: lockZone.x, y: lockZone.y },
       [oppositeLabel]: { x: lockZone.x + 350, y: lockZone.y },
@@ -378,47 +376,54 @@ export default function IModelExplainer() {
         })}
       </div>
 
+      {/* Info Panel */}
       <div className="px-4 pb-8 shrink-0 relative z-20 min-h-[220px] flex flex-col justify-end">
         {locked && (
           <div
-            className="rounded-xl p-6 animate-fadeIn w-full max-w-2xl mx-auto backdrop-blur-md"
+            className="rounded-xl p-8 animate-fadeIn w-full max-w-2xl mx-auto backdrop-blur-md"
             style={{ 
               background: 'rgba(15, 23, 42, 0.9)',
               border: `1px solid ${colors[locked]}40`,
               boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 0 20px ${colors[locked]}10`,
             }}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-2 h-8 rounded-full" style={{ backgroundColor: colors[locked] }} />
-              <h2 className="text-xl font-bold tracking-tight uppercase" style={{ color: colors[locked] }}>{locked} Mode</h2>
+            <div className="flex items-center gap-3 mb-6 transition-all duration-300">
+              <div className="w-2 h-10 rounded-full" style={{ backgroundColor: colors[locked] }} />
+              <h2 className="text-2xl font-bold tracking-tight uppercase" style={{ color: colors[locked] }}>{locked} Mode</h2>
             </div>
 
-            <div className="min-h-[100px] flex flex-col justify-center">
+            <div className="min-h-[120px] flex flex-col justify-center">
               {activeReveal ? (
                 <div key={activeReveal} className="animate-revealText">
-                  <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-2">
+                  <h3 
+                    className="uppercase tracking-[0.3em] font-black mb-3 transition-all duration-300"
+                    style={{ 
+                      color: colors[locked], 
+                      fontSize: '14px' 
+                    }}
+                  >
                     {activeReveal === 'feelsLike' ? 'Feels Like' : 'When You Use It'}
                   </h3>
-                  <p className="text-lg leading-relaxed text-slate-100 font-light italic">
+                  <p className="text-xl leading-relaxed text-slate-100 font-light italic transition-all duration-300">
                     {explanations[locked][activeReveal]}
                   </p>
                 </div>
               ) : (
                 <div key="whatItIs" className="animate-revealText">
-                  <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-2">
+                  <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-3">
                     Core Definition
                   </h3>
-                  <p className="text-lg leading-relaxed text-slate-100 font-light">
+                  <p className="text-lg leading-relaxed text-slate-200 font-light">
                     {explanations[locked].whatItIs}
                   </p>
-                  <p className="mt-4 text-xs text-slate-400 italic">
+                  <p className="mt-5 text-xs text-slate-400 italic">
                     Drag the {locked} circle left to see how it feels and when to use it
                   </p>
                 </div>
               )}
             </div>
             
-            <p className="mt-6 text-[10px] font-bold text-center tracking-[0.3em] uppercase text-indigo-400/60">
+            <p className="mt-8 text-[10px] font-bold text-center tracking-[0.3em] uppercase text-indigo-400/60">
                 ⟵ Drag another I-Mode to explore
             </p>
           </div>
@@ -431,7 +436,7 @@ export default function IModelExplainer() {
           to { opacity: 1; transform: translateY(0); }
         }
         @keyframes revealText {
-          from { opacity: 0; transform: translateX(-10px); filter: blur(4px); }
+          from { opacity: 0; transform: translateX(-15px); filter: blur(6px); }
           to { opacity: 1; transform: translateX(0); filter: blur(0); }
         }
         .animate-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
