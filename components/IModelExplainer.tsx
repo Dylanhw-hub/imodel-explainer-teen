@@ -47,7 +47,7 @@ interface Position {
   y: number;
 }
 
-type RevealType = 'feelsLike' | 'whatItIs' | 'whenYouUseIt' | null;
+type RevealType = 'feelsLike' | 'whenYouUseIt' | null;
 
 export default function IModelExplainer() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -65,11 +65,10 @@ export default function IModelExplainer() {
   const lockZone = { x: 200, y: dimensions.height / 2 };
   const lockRadius = 60;
 
-  // Reveal Zone Positions (Calculated relative to lock zone - MOVED TO THE LEFT)
+  // Reduced to 2 Reveal Zones: Feels Like and When You Use It
   const getRevealZones = () => [
-    { id: 'feelsLike' as const, label: '← Feels Like', y: lockZone.y - 110 },
-    { id: 'whatItIs' as const, label: '← What It Is', y: lockZone.y },
-    { id: 'whenYouUseIt' as const, label: '← When You Use It', y: lockZone.y + 110 }
+    { id: 'feelsLike' as const, label: '← Feels Like', y: lockZone.y - 70 },
+    { id: 'whenYouUseIt' as const, label: '← When You Use It', y: lockZone.y + 70 }
   ];
 
   useEffect(() => {
@@ -186,7 +185,7 @@ export default function IModelExplainer() {
     const dist = Math.sqrt(dx * dx + dy * dy);
     setNearLock(dist < lockRadius * 1.8);
 
-    // Check if dragging locked node into reveal zones (CALCULATED TO THE LEFT)
+    // Check if dragging locked node into reveal zones
     if (locked && dragging === locked) {
       let foundZone: RevealType = null;
       getRevealZones().forEach(zone => {
@@ -208,7 +207,6 @@ export default function IModelExplainer() {
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (locked) {
-          // If dragging locked node out past reveal boundary or significant distance to right
           if (dist > lockRadius * 3 || (dragPos.x > lockZone.x + 150)) {
             setLocked(null);
             setActiveReveal(null);
@@ -264,7 +262,6 @@ export default function IModelExplainer() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
-        {/* Lock/Explore Zone Visuals */}
         <div
           className="absolute pointer-events-none"
           style={{ left: lockZone.x, top: lockZone.y, transform: 'translate(-50%, -50%)' }}
@@ -292,7 +289,6 @@ export default function IModelExplainer() {
           )}
         </div>
 
-        {/* Reveal Zones (Only when locked - NOW ON THE LEFT) */}
         {locked && (
           <div className="absolute" style={{ left: lockZone.x - 100, top: 0, height: '100%', pointerEvents: 'none' }}>
             {getRevealZones().map((zone) => {
@@ -396,17 +392,25 @@ export default function IModelExplainer() {
 
             <div className="min-h-[100px] flex flex-col justify-center">
               {activeReveal ? (
-                <div className="animate-revealText">
+                <div key={activeReveal} className="animate-revealText">
                   <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-2">
-                    {activeReveal === 'feelsLike' ? 'Experiential Lens' : activeReveal === 'whatItIs' ? 'Core Definition' : 'Contextual Use'}
+                    {activeReveal === 'feelsLike' ? 'Experiential Lens' : 'Contextual Use'}
                   </h3>
                   <p className="text-lg leading-relaxed text-slate-100 font-light italic">
                     {explanations[locked][activeReveal]}
                   </p>
                 </div>
               ) : (
-                <div className="text-center py-4">
-                   <p className="text-slate-400 italic">Drag the {locked} circle into a reveal zone to see details</p>
+                <div key="whatItIs" className="animate-revealText">
+                  <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-2">
+                    Core Definition
+                  </h3>
+                  <p className="text-lg leading-relaxed text-slate-100 font-light">
+                    {explanations[locked].whatItIs}
+                  </p>
+                  <p className="mt-4 text-xs text-slate-400 italic">
+                    Drag the {locked} circle to the left to reveal more details...
+                  </p>
                 </div>
               )}
             </div>
