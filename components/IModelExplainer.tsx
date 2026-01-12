@@ -58,11 +58,11 @@ export default function IModelExplainer() {
   const [nearLock, setNearLock] = useState<boolean>(false);
   const [activeReveal, setActiveReveal] = useState<RevealType>(null);
 
-  // Layout constants
-  const webCenterX = dimensions.width - 350;
+  // Layout constants - Shifted further right
+  const webCenterX = dimensions.width - 200; // Shifted from 350 to 200 from right edge
   const webCenterY = dimensions.height / 2;
   const radius = 90;
-  const lockZone = { x: dimensions.width * 0.35, y: dimensions.height / 2 };
+  const lockZone = { x: dimensions.width * 0.45, y: dimensions.height / 2 }; // Shifted lock zone right (0.35 to 0.45)
   const lockRadius = 60;
   const revealDetectionRadius = 100;
 
@@ -324,27 +324,27 @@ export default function IModelExplainer() {
           <div 
             className="absolute z-50 pointer-events-none animate-revealFloating"
             style={{ 
-              left: lockZone.x - 280, 
+              left: lockZone.x - 320, // Increased gap from lock zone
               top: lockZone.y, 
               transform: 'translate(-50%, -50%)',
-              width: '280px'
+              width: '320px'
             }}
           >
             <div 
-              className="rounded-xl p-4 backdrop-blur-lg shadow-2xl"
+              className="rounded-xl p-5 backdrop-blur-lg shadow-2xl"
               style={{ 
-                background: 'rgba(15, 23, 42, 0.9)',
+                background: 'rgba(15, 23, 42, 0.95)',
                 border: `1px solid ${colors[locked]}60`,
-                boxShadow: `0 10px 40px -10px ${colors[locked]}40`
+                boxShadow: `0 15px 50px -15px ${colors[locked]}40`
               }}
             >
               <h3 
-                className="text-[10px] uppercase tracking-[0.2em] font-black mb-2"
+                className="text-[11px] uppercase tracking-[0.25em] font-black mb-3"
                 style={{ color: colors[locked] }}
               >
                 {activeReveal === 'feelsLike' ? 'Feels Like' : 'When You Use It'}
               </h3>
-              <p className="text-sm leading-relaxed text-slate-100 italic">
+              <p className="text-base leading-relaxed text-slate-100 italic">
                 {explanations[locked][activeReveal]}
               </p>
             </div>
