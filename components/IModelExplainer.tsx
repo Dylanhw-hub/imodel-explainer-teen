@@ -58,16 +58,17 @@ export default function IModelExplainer() {
   const [nearLock, setNearLock] = useState<boolean>(false);
   const [activeReveal, setActiveReveal] = useState<RevealType>(null);
 
-  // Layout constants - Shifted right for better balance
+  // Layout constants
   const webCenterX = dimensions.width - 350;
   const webCenterY = dimensions.height / 2;
   const radius = 90;
   const lockZone = { x: dimensions.width * 0.35, y: dimensions.height / 2 };
   const lockRadius = 60;
+  const revealDetectionRadius = 90; // Generous proximity radius
 
   const getRevealZones = () => [
-    { id: 'feelsLike' as const, label: '← Feels Like', y: lockZone.y - 70 },
-    { id: 'whenYouUseIt' as const, label: '← When You Use It', y: lockZone.y + 70 }
+    { id: 'feelsLike' as const, label: '← Feels Like', y: lockZone.y - 70, x: lockZone.x - 100 },
+    { id: 'whenYouUseIt' as const, label: '← When You Use It', y: lockZone.y + 70, x: lockZone.x - 100 }
   ];
 
   useEffect(() => {
@@ -126,7 +127,22 @@ export default function IModelExplainer() {
     if (locked) {
       const lockedPositions = getTargetPositions(locked);
       if (dragging === locked && dragPos) {
-        lockedPositions[locked] = dragPos;
+        // Apply magnetic pull toward active reveal zone
+        let finalPos = dragPos;
+        getRevealZones().forEach(zone => {
+          const dx = dragPos.x - zone.x;
+          const dy = dragPos.y - zone.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < revealDetectionRadius) {
+            // Magnetic weighting: pull 30% toward the center of the zone
+            const weight = 0.3 * (1 - dist / revealDetectionRadius);
+            finalPos = {
+              x: dragPos.x + (zone.x - dragPos.x) * weight,
+              y: dragPos.y + (zone.y - dragPos.y) * weight
+            };
+          }
+        });
+        lockedPositions[locked] = finalPos;
       }
       return lockedPositions;
     }
@@ -186,10 +202,10 @@ export default function IModelExplainer() {
     if (locked && dragging === locked) {
       let foundZone: RevealType = null;
       getRevealZones().forEach(zone => {
-        const zdx = newPos.x - (lockZone.x - 100);
+        const zdx = newPos.x - zone.x;
         const zdy = newPos.y - zone.y;
         const zdist = Math.sqrt(zdx * zdx + zdy * zdy);
-        if (zdist < 50) foundZone = zone.id;
+        if (zdist < revealDetectionRadius) foundZone = zone.id;
       });
       setActiveReveal(foundZone);
     }
@@ -204,7 +220,17 @@ export default function IModelExplainer() {
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (locked) {
-          if (dist > lockRadius * 3 || (dragPos.x > lockZone.x + 200)) {
+          // Keep current reveal if released inside detection radius
+          let isReleasedInZone = false;
+          getRevealZones().forEach(zone => {
+            const zdx = dragPos.x - zone.x;
+            const zdy = dragPos.y - zone.y;
+            const zdist = Math.sqrt(zdx * zdx + zdy * zdy);
+            if (zdist < revealDetectionRadius) isReleasedInZone = true;
+          });
+
+          // If not in a zone and dragged far enough away, unlock
+          if (!isReleasedInZone && (dist > lockRadius * 3 || dragPos.x > lockZone.x + 200)) {
             setLocked(null);
             setActiveReveal(null);
           }
@@ -253,7 +279,7 @@ export default function IModelExplainer() {
         <div className={`transition-opacity duration-300 ${!locked ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
            <p className="text-sm mt-2 text-slate-400">
             Drag an I to the Explore zone
-          </p>
+           </p>
         </div>
       </div>
 
@@ -291,27 +317,30 @@ export default function IModelExplainer() {
         </div>
 
         {locked && (
-          <div className="absolute" style={{ left: lockZone.x - 100, top: 0, height: '100%', pointerEvents: 'none' }}>
+          <div className="absolute" style={{ left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
             {getRevealZones().map((zone) => {
               const isActive = activeReveal === zone.id;
               return (
                 <div
                   key={zone.id}
                   className="absolute flex items-center justify-end"
-                  style={{ top: zone.y, transform: 'translateY(-50%) translate(-100%)' }}
+                  style={{ left: zone.x, top: zone.y, transform: 'translate(-100%, -50%)' }}
                 >
                   <div
-                    className="w-20 h-20 rounded-full border border-dashed flex items-center justify-center transition-all duration-300 relative"
+                    className="w-24 h-24 rounded-full border border-dashed flex items-center justify-center transition-all duration-300 relative"
                     style={{
                       borderColor: isActive ? colors[locked] : 'rgba(255,255,255,0.1)',
-                      backgroundColor: isActive ? `${colors[locked]}20` : 'transparent',
-                      boxShadow: isActive ? `0 0 20px ${colors[locked]}40` : 'none',
-                      transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                      backgroundColor: isActive ? `${colors[locked]}25` : 'transparent',
+                      boxShadow: isActive ? `0 0 35px ${colors[locked]}50` : 'none',
+                      transform: isActive ? 'scale(1.15)' : 'scale(1)',
                     }}
                   >
                     <span 
-                      className="text-[9px] uppercase font-bold text-center px-1 transition-colors duration-300"
-                      style={{ color: isActive ? colors[locked] : 'rgba(255,255,255,0.3)' }}
+                      className="text-[10px] uppercase font-black text-center px-1 transition-all duration-300"
+                      style={{ 
+                        color: isActive ? colors[locked] : 'rgba(255,255,255,0.3)',
+                        textShadow: isActive ? `0 0 10px ${colors[locked]}80` : 'none'
+                      }}
                     >
                       {zone.label}
                     </span>
