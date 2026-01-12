@@ -278,7 +278,7 @@ export default function IModelExplainer() {
       <div className="text-center px-4 pt-20 pb-4 shrink-0 z-20 relative">
         <div className={`transition-opacity duration-300 ${!locked ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
            <p className="text-sm mt-2 text-slate-400">
-            Drag an I to the Explore zone
+            Drag an I-Mode to the Explore zone
            </p>
         </div>
       </div>
