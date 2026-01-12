@@ -32,7 +32,7 @@ const explanations: Record<string, IModeData> = {
   },
   Intuition: {
     feelsLike: "That internal signal saying 'wait' or 'something's not right here'",
-    whatItIs: "Trusting expertise and professional judgment. This is the mode of your internal compass—the sense that something isn't right, or that you should pause. Instead of ignoring these feelings, you treat them as signals worth investigating.",
+     whatItIs: "Trusting expertise and professional judgment. This is the mode of your internal compass—the sense that something isn't right, or that you should pause. Instead of ignoring these feelings, you treat them as signals worth investigating.",
     whenYouUseIt: "When something feels generic, too easy, or not quite right"
   }
 };
@@ -58,11 +58,11 @@ export default function IModelExplainer() {
   const [nearLock, setNearLock] = useState<boolean>(false);
   const [activeReveal, setActiveReveal] = useState<RevealType>(null);
 
-  // Layout constants
-  const webCenterX = dimensions.width - 250;
+  // Layout constants - Shifted right for better balance
+  const webCenterX = dimensions.width - 350; // Moved further right from 250
   const webCenterY = dimensions.height / 2;
   const radius = 90;
-  const lockZone = { x: 200, y: dimensions.height / 2 };
+  const lockZone = { x: dimensions.width * 0.35, y: dimensions.height / 2 }; // Relative positioning
   const lockRadius = 60;
 
   // Reduced to 2 Reveal Zones: Feels Like and When You Use It
@@ -114,11 +114,12 @@ export default function IModelExplainer() {
     const neighbor1Label = labels[neighborIndices[0]];
     const neighbor2Label = labels[neighborIndices[1]];
 
+    // Spread nodes out slightly more to the right
     return {
       [leadLabel]: { x: lockZone.x, y: lockZone.y },
-      [oppositeLabel]: { x: lockZone.x + 320, y: lockZone.y },
-      [neighbor1Label]: { x: lockZone.x + 220, y: lockZone.y - 100 },
-      [neighbor2Label]: { x: lockZone.x + 220, y: lockZone.y + 100 }
+      [oppositeLabel]: { x: lockZone.x + 350, y: lockZone.y },
+      [neighbor1Label]: { x: lockZone.x + 250, y: lockZone.y - 120 },
+      [neighbor2Label]: { x: lockZone.x + 250, y: lockZone.y + 120 }
     };
   };
 
@@ -179,13 +180,11 @@ export default function IModelExplainer() {
     };
     setDragPos(newPos);
     
-    // Check if near lock zone
     const dx = newPos.x - lockZone.x;
     const dy = newPos.y - lockZone.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
     setNearLock(dist < lockRadius * 1.8);
 
-    // Check if dragging locked node into reveal zones
     if (locked && dragging === locked) {
       let foundZone: RevealType = null;
       getRevealZones().forEach(zone => {
@@ -207,7 +206,7 @@ export default function IModelExplainer() {
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (locked) {
-          if (dist > lockRadius * 3 || (dragPos.x > lockZone.x + 150)) {
+          if (dist > lockRadius * 3 || (dragPos.x > lockZone.x + 200)) {
             setLocked(null);
             setActiveReveal(null);
           }
@@ -248,7 +247,6 @@ export default function IModelExplainer() {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative" style={{ background: 'linear-gradient(to bottom, #0f172a, #1e1b4b)' }}>
-      {/* Persistent Heading */}
       <div className="absolute top-0 left-0 w-full pt-8 z-30 pointer-events-none text-center">
         <h1 className="text-2xl font-light tracking-[0.4em] text-white/90 uppercase">The I-Model</h1>
       </div>
@@ -256,7 +254,7 @@ export default function IModelExplainer() {
       <div className="text-center px-4 pt-20 pb-4 shrink-0 z-20 relative">
         <div className={`transition-opacity duration-300 ${!locked ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
            <p className="text-sm mt-2 text-slate-400">
-            Drag an I to the Explore zone on the left
+            Drag an I to the Explore zone
           </p>
         </div>
       </div>
