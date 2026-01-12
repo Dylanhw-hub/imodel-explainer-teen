@@ -248,7 +248,12 @@ export default function IModelExplainer() {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative" style={{ background: 'linear-gradient(to bottom, #0f172a, #1e1b4b)' }}>
-      <div className="text-center px-4 pt-8 pb-4 shrink-0 z-20 relative">
+      {/* Persistent Heading */}
+      <div className="absolute top-0 left-0 w-full pt-8 z-30 pointer-events-none text-center">
+        <h1 className="text-2xl font-light tracking-[0.4em] text-white/90 uppercase">The I-Model</h1>
+      </div>
+
+      <div className="text-center px-4 pt-20 pb-4 shrink-0 z-20 relative">
         <div className={`transition-opacity duration-300 ${!locked ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
            <p className="text-sm mt-2 text-slate-400">
             Drag an I to the Explore zone on the left
@@ -416,7 +421,7 @@ export default function IModelExplainer() {
             </div>
             
             <p className="mt-6 text-[10px] font-bold text-center tracking-[0.3em] uppercase text-indigo-400/60">
-                ⟵ Drag another I in to explore
+                ⟵ Drag another I-Mode to explore
             </p>
           </div>
         )}
