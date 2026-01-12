@@ -64,11 +64,11 @@ export default function IModelExplainer() {
   const radius = 90;
   const lockZone = { x: dimensions.width * 0.35, y: dimensions.height / 2 };
   const lockRadius = 60;
-  const revealDetectionRadius = 90; // Generous proximity radius
+  const revealDetectionRadius = 100;
 
   const getRevealZones = () => [
-    { id: 'feelsLike' as const, label: '← Feels Like', y: lockZone.y - 70, x: lockZone.x - 100 },
-    { id: 'whenYouUseIt' as const, label: '← When You Use It', y: lockZone.y + 70, x: lockZone.x - 100 }
+    { id: 'feelsLike' as const, label: 'Feels Like', y: lockZone.y - 85, x: lockZone.x - 120 },
+    { id: 'whenYouUseIt' as const, label: 'When You Use It', y: lockZone.y + 85, x: lockZone.x - 120 }
   ];
 
   useEffect(() => {
@@ -127,15 +127,13 @@ export default function IModelExplainer() {
     if (locked) {
       const lockedPositions = getTargetPositions(locked);
       if (dragging === locked && dragPos) {
-        // Apply magnetic pull toward active reveal zone
         let finalPos = dragPos;
         getRevealZones().forEach(zone => {
           const dx = dragPos.x - zone.x;
           const dy = dragPos.y - zone.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < revealDetectionRadius) {
-            // Magnetic weighting: pull 30% toward the center of the zone
-            const weight = 0.3 * (1 - dist / revealDetectionRadius);
+            const weight = 0.4 * (1 - dist / revealDetectionRadius);
             finalPos = {
               x: dragPos.x + (zone.x - dragPos.x) * weight,
               y: dragPos.y + (zone.y - dragPos.y) * weight
@@ -143,6 +141,9 @@ export default function IModelExplainer() {
           }
         });
         lockedPositions[locked] = finalPos;
+      } else if (activeReveal) {
+        const zone = getRevealZones().find(z => z.id === activeReveal);
+        if (zone) lockedPositions[locked] = { x: zone.x, y: zone.y };
       }
       return lockedPositions;
     }
@@ -220,7 +221,6 @@ export default function IModelExplainer() {
         const dist = Math.sqrt(dx * dx + dy * dy);
         
         if (locked) {
-          // Keep current reveal if released inside detection radius
           let releasedZoneId: RevealType = null;
           getRevealZones().forEach(zone => {
             const zdx = dragPos.x - zone.x;
@@ -230,14 +230,11 @@ export default function IModelExplainer() {
           });
 
           if (releasedZoneId) {
-            // Stick to the zone that was detected on release
             setActiveReveal(releasedZoneId);
           } else if (dist > lockRadius * 3 || dragPos.x > lockZone.x + 200) {
-            // If not in a zone and dragged far enough away, unlock
             setLocked(null);
             setActiveReveal(null);
           } else {
-            // Released in center/neutral area while locked, clear reveal
             setActiveReveal(null);
           }
         } else {
@@ -322,6 +319,38 @@ export default function IModelExplainer() {
           )}
         </div>
 
+        {/* Floating Reveal Box */}
+        {locked && activeReveal && (
+          <div 
+            className="absolute z-50 pointer-events-none animate-revealFloating"
+            style={{ 
+              left: lockZone.x - 280, 
+              top: lockZone.y, 
+              transform: 'translate(-50%, -50%)',
+              width: '280px'
+            }}
+          >
+            <div 
+              className="rounded-xl p-4 backdrop-blur-lg shadow-2xl"
+              style={{ 
+                background: 'rgba(15, 23, 42, 0.9)',
+                border: `1px solid ${colors[locked]}60`,
+                boxShadow: `0 10px 40px -10px ${colors[locked]}40`
+              }}
+            >
+              <h3 
+                className="text-[10px] uppercase tracking-[0.2em] font-black mb-2"
+                style={{ color: colors[locked] }}
+              >
+                {activeReveal === 'feelsLike' ? 'Feels Like' : 'When You Use It'}
+              </h3>
+              <p className="text-sm leading-relaxed text-slate-100 italic">
+                {explanations[locked][activeReveal]}
+              </p>
+            </div>
+          </div>
+        )}
+
         {locked && (
           <div className="absolute" style={{ left: 0, top: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
             {getRevealZones().map((zone) => {
@@ -329,11 +358,11 @@ export default function IModelExplainer() {
               return (
                 <div
                   key={zone.id}
-                  className="absolute flex items-center justify-end"
-                  style={{ left: zone.x, top: zone.y, transform: 'translate(-100%, -50%)' }}
+                  className="absolute flex items-center justify-center"
+                  style={{ left: zone.x, top: zone.y, transform: 'translate(-50%, -50%)' }}
                 >
                   <div
-                    className="w-24 h-24 rounded-full border border-dashed flex items-center justify-center transition-all duration-300 relative"
+                    className="w-28 h-28 rounded-full border border-dashed flex items-center justify-center transition-all duration-300 relative"
                     style={{
                       borderColor: isActive ? colors[locked] : 'rgba(255,255,255,0.1)',
                       backgroundColor: isActive ? `${colors[locked]}25` : 'transparent',
@@ -342,7 +371,7 @@ export default function IModelExplainer() {
                     }}
                   >
                     <span 
-                      className="text-[10px] uppercase font-black text-center px-1 transition-all duration-300"
+                      className="text-[10px] uppercase font-black text-center px-2 transition-all duration-300"
                       style={{ 
                         color: isActive ? colors[locked] : 'rgba(255,255,255,0.3)',
                         textShadow: isActive ? `0 0 10px ${colors[locked]}80` : 'none'
@@ -411,7 +440,7 @@ export default function IModelExplainer() {
         })}
       </div>
 
-      {/* Info Panel */}
+      {/* Info Panel (Always Core Definition) */}
       <div className="px-4 pb-8 shrink-0 relative z-20 min-h-[220px] flex flex-col justify-end">
         {locked && (
           <div
@@ -422,43 +451,28 @@ export default function IModelExplainer() {
               boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 0 20px ${colors[locked]}10`,
             }}
           >
-            <div className="flex items-center gap-3 mb-6 transition-all duration-300">
-              <div className="w-2 h-10 rounded-full" style={{ backgroundColor: colors[locked] }} />
-              <h2 className="text-2xl font-bold tracking-tight uppercase" style={{ color: colors[locked] }}>{locked} Mode</h2>
+            <div className="flex items-center gap-3 mb-4 transition-all duration-300">
+              <div className="w-2 h-8 rounded-full" style={{ backgroundColor: colors[locked] }} />
+              <h2 className="text-xl font-bold tracking-tight uppercase" style={{ color: colors[locked] }}>{locked} Mode</h2>
             </div>
 
-            <div className="min-h-[120px] flex flex-col justify-center">
-              {activeReveal ? (
-                <div key={activeReveal} className="animate-revealText">
-                  <h3 
-                    className="uppercase tracking-[0.3em] font-black mb-3 transition-all duration-300"
-                    style={{ 
-                      color: colors[locked], 
-                      fontSize: '14px' 
-                    }}
-                  >
-                    {activeReveal === 'feelsLike' ? 'Feels Like' : 'When You Use It'}
-                  </h3>
-                  <p className="text-xl leading-relaxed text-slate-100 font-light italic transition-all duration-300">
-                    {explanations[locked][activeReveal]}
+            <div className="min-h-[100px] flex flex-col justify-center">
+              <div key="whatItIs" className="animate-revealText">
+                <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-2">
+                  Core Definition
+                </h3>
+                <p className="text-base leading-relaxed text-slate-200 font-light">
+                  {explanations[locked].whatItIs}
+                </p>
+                {!activeReveal && (
+                  <p className="mt-4 text-[10px] text-slate-400 italic tracking-widest uppercase">
+                    Drag the {locked} circle left to see "Feels Like" or "When You Use It"
                   </p>
-                </div>
-              ) : (
-                <div key="whatItIs" className="animate-revealText">
-                  <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-3">
-                    Core Definition
-                  </h3>
-                  <p className="text-lg leading-relaxed text-slate-200 font-light">
-                    {explanations[locked].whatItIs}
-                  </p>
-                  <p className="mt-5 text-xs text-slate-400 italic">
-                    Drag the {locked} circle left to see how it feels and when to use it
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
             
-            <p className="mt-8 text-[10px] font-bold text-center tracking-[0.3em] uppercase text-indigo-400/60">
+            <p className="mt-6 text-[10px] font-bold text-center tracking-[0.3em] uppercase text-indigo-400/60">
                 ⟵ Drag another I-Mode to explore
             </p>
           </div>
@@ -474,8 +488,13 @@ export default function IModelExplainer() {
           from { opacity: 0; transform: translateX(-15px); filter: blur(6px); }
           to { opacity: 1; transform: translateX(0); filter: blur(0); }
         }
+        @keyframes revealFloating {
+          from { opacity: 0; transform: translate(-45%, -50%) scale(0.95); filter: blur(4px); }
+          to { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
+        }
         .animate-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
         .animate-revealText { animation: revealText 0.3s ease-out forwards; }
+        .animate-revealFloating { animation: revealFloating 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
       `}</style>
     </div>
   );
