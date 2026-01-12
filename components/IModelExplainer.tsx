@@ -8,43 +8,32 @@ const colors: Record<string, string> = {
   Intentionality: '#e879f9'
 };
 
-interface Explanation {
-  main: string;
-  others: Record<string, string>;
+interface IModeData {
+  feelsLike: string;
+  whatItIs: string;
+  whenYouUseIt: string;
 }
 
-const explanations: Record<string, Explanation> = {
-  Integrity: {
-    main: "Integrity grounds your AI use in ethics and authenticity. It asks: Is this an appropriate use of AI? Am I being honest about how I'm using it? Does this align with my values and responsibilities?",
-    others: {
-      Intentionality: "Ensures your purpose aligns with your ethical responsibilities.",
-      Inquiry: "Helps you question whether outputs meet your standards of honesty and quality.",
-      Intuition: "Alerts you when something feels ethically off or inauthentic."
-    }
+const explanations: Record<string, IModeData> = {
+  Intentionality: {
+    feelsLike: "Having a clear sense of direction; knowing your 'why'",
+    whatItIs: "Being clear about purpose and direction. This is the mode of clarity about why you're using AI and what you want to achieve—including whether AI is the right tool at all.",
+    whenYouUseIt: "Before you start, when deciding whether to use AI"
   },
-  Intuition: {
-    main: "Intuition is your internal compass when working with AI. It's the feeling that something isn't quite right, or the sense that AI might help here. Learning to trust and investigate these signals makes you a better collaborator.",
-    others: {
-      Integrity: "Helps you examine what your gut feeling is actually telling you.",
-      Intentionality: "Connects your instincts to your deeper purpose.",
-      Inquiry: "Turns vague feelings into specific questions you can investigate."
-    }
+  Integrity: {
+    feelsLike: "Confidence that you can stand behind your choices; no ethical discomfort",
+    whatItIs: "Ensuring ethical, honest, and appropriate use. This is the mode of using AI honestly and responsibly—being transparent about its role, taking accountability for outputs, ensuring alignment with your values.",
+    whenYouUseIt: "When there are stakes—'Is this still my work?' 'Should I disclose I used AI?'"
   },
   Inquiry: {
-    main: "Inquiry is the questioning stance you bring to AI collaboration. It shapes how you prompt, how you evaluate outputs, and how you refine results. Good inquiry means staying curious and critical throughout.",
-    others: {
-      Intentionality: "Focuses your questions on what actually matters.",
-      Integrity: "Ensures your investigation serves honest, ethical ends.",
-      Intuition: "Prompts you to dig deeper when something feels incomplete."
-    }
+    feelsLike: "Engaged curiosity; critically examining rather than passively accepting",
+    whatItIs: "Critical examination and quality checking. This is the mode of active questioning—prompting well, evaluating outputs critically, probing deeper when needed. Good inquiry means staying curious about both what AI produces and how you're working with it.",
+    whenYouUseIt: "While working—'Is this actually what I asked for?' 'Does this match my needs?'"
   },
-  Intentionality: {
-    main: "Intentionality means being clear about why you're using AI and what you want to achieve. It's the foundation that shapes everything else—without clear purpose, AI collaboration drifts.",
-    others: {
-      Integrity: "Checks whether your intentions align with your values.",
-      Inquiry: "Translates your purpose into effective prompts and evaluation.",
-      Intuition: "Helps you sense when you've lost sight of your original goal."
-    }
+  Intuition: {
+    feelsLike: "That internal signal saying 'wait' or 'something's not right here'",
+    whatItIs: "Trusting expertise and professional judgment. This is the mode of your internal compass—the sense that something isn't right, or that you should pause. Instead of ignoring these feelings, you treat them as signals worth investigating.",
+    whenYouUseIt: "When something feels generic, too easy, or not quite right"
   }
 };
 
@@ -58,24 +47,30 @@ interface Position {
   y: number;
 }
 
+type RevealType = 'feelsLike' | 'whatItIs' | 'whenYouUseIt' | null;
+
 export default function IModelExplainer() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState<Dimensions>({ width: 400, height: 300 });
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragPos, setDragPos] = useState<Position | null>(null);
   const [locked, setLocked] = useState<string | null>(null);
-  const [hoveredSupport, setHoveredSupport] = useState<string | null>(null);
   const [nearLock, setNearLock] = useState<boolean>(false);
+  const [activeReveal, setActiveReveal] = useState<RevealType>(null);
 
-  // Web on the right side - Moved further inward
+  // Layout constants
   const webCenterX = dimensions.width - 250;
   const webCenterY = dimensions.height / 2;
-  // Radius increased to make the section feel larger
   const radius = 90;
-
-  // Explore zone on the left - Moved closer to center
   const lockZone = { x: 200, y: dimensions.height / 2 };
   const lockRadius = 60;
+
+  // Reveal Zone Positions (Calculated relative to lock zone - MOVED TO THE LEFT)
+  const getRevealZones = () => [
+    { id: 'feelsLike' as const, label: '← Feels Like', y: lockZone.y - 110 },
+    { id: 'whatItIs' as const, label: '← What It Is', y: lockZone.y },
+    { id: 'whenYouUseIt' as const, label: '← When You Use It', y: lockZone.y + 110 }
+  ];
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -84,11 +79,8 @@ export default function IModelExplainer() {
         setDimensions({ width, height });
       }
     };
-    // Initial update
     updateDimensions();
-    // Add small delay to ensure container is fully rendered
     const timeout = setTimeout(updateDimensions, 100);
-    
     window.addEventListener('resize', updateDimensions);
     return () => {
       window.removeEventListener('resize', updateDimensions);
@@ -109,91 +101,64 @@ export default function IModelExplainer() {
     return positions;
   };
 
-  // Helper to calculate the 'Locked' layout based on which node is the lead
   const getTargetPositions = (leadLabel: string) => {
     const leadIndex = labels.indexOf(leadLabel);
     const oppositeIndex = (leadIndex + 2) % 4;
     const oppositeLabel = labels[oppositeIndex];
-    
-    // Get remaining two indices for the neighbors
     const neighborIndices = [0, 1, 2, 3].filter(i => i !== leadIndex && i !== oppositeIndex);
-    
-    // Sort neighbors by their vertical position in the original circle to avoid crossing paths.
-    // 0 is Top (-1), 1 is Mid (0), 2 is Bottom (1), 3 is Mid (0).
     const getYScore = (i: number) => {
         if (i === 0) return -1;
         if (i === 2) return 1;
         return 0;
     };
-    
-    // Sort so the 'higher' neighbor in the circle goes to the top position
     neighborIndices.sort((a, b) => getYScore(a) - getYScore(b));
-    
-    const neighbor1Label = labels[neighborIndices[0]]; // Goes Top
-    const neighbor2Label = labels[neighborIndices[1]]; // Goes Bottom
+    const neighbor1Label = labels[neighborIndices[0]];
+    const neighbor2Label = labels[neighborIndices[1]];
 
     return {
       [leadLabel]: { x: lockZone.x, y: lockZone.y },
-      [oppositeLabel]: { x: lockZone.x + 260, y: lockZone.y },         // Far Right tip
-      [neighbor1Label]: { x: lockZone.x + 140, y: lockZone.y - 90 },  // Top Right corner
-      [neighbor2Label]: { x: lockZone.x + 140, y: lockZone.y + 90 }   // Bottom Right corner
+      [oppositeLabel]: { x: lockZone.x + 320, y: lockZone.y },
+      [neighbor1Label]: { x: lockZone.x + 220, y: lockZone.y - 100 },
+      [neighbor2Label]: { x: lockZone.x + 220, y: lockZone.y + 100 }
     };
   };
 
   const getPositions = (): Record<string, Position> => {
     const rest = getRestPositions();
-
     if (locked) {
-      // Get the target layout for this locked node
       const lockedPositions = getTargetPositions(locked);
-
-      // If we are currently dragging the locked node (e.g. to reset it), override its position
       if (dragging === locked && dragPos) {
         lockedPositions[locked] = dragPos;
       }
-
       return lockedPositions;
     }
-
     if (dragging && dragPos) {
       const positions = { ...rest };
       positions[dragging] = dragPos;
-
       const dx = dragPos.x - lockZone.x;
       const dy = dragPos.y - lockZone.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
-
-      // Magnetic pull interpolation when near lock zone
       if (dist < lockRadius * 3.5) {
-        // Calculate where everyone WOULD go if we locked this node right now
         const targets = getTargetPositions(dragging);
         const t = Math.max(0, 1 - dist / (lockRadius * 3.5));
-        
         labels.forEach(label => {
-          if (label === dragging) return; // This one follows mouse
-          
+          if (label === dragging) return;
           const start = rest[label];
-          const end = targets[label]; // Interpolate towards specific target role
-          
+          const end = targets[label];
           positions[label] = {
             x: start.x + (end.x - start.x) * t,
             y: start.y + (end.y - start.y) * t
           };
         });
       }
-
       return positions;
     }
-
     return rest;
   };
 
   const positions = getPositions();
 
   const handlePointerDown = (label: string, e: React.PointerEvent) => {
-    // If locked, only allow dragging the active locked node (to dismiss it)
-    if (locked && locked !== label) return;
-
     e.preventDefault();
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
@@ -202,70 +167,62 @@ export default function IModelExplainer() {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top
       });
-      // Capture pointer to ensure we receive move events even if mouse leaves the element
       (e.target as Element).setPointerCapture(e.pointerId);
     }
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!dragging || !containerRef.current) return; // Allow move if locked but dragging
-    
+    if (!dragging || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    // Increased boundary buffer to 45 to account for larger node size
     const newPos = {
       x: Math.max(45, Math.min(dimensions.width - 45, e.clientX - rect.left)),
       y: Math.max(45, Math.min(dimensions.height - 45, e.clientY - rect.top))
     };
     setDragPos(newPos);
     
+    // Check if near lock zone
     const dx = newPos.x - lockZone.x;
     const dy = newPos.y - lockZone.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    
-    // Update nearLock state
-    if (locked) {
-        // If locked, we are 'near' (connected) as long as we are within threshold
-        setNearLock(dist < lockRadius * 2);
-    } else {
-        // If not locked, we are 'near' when entering the zone
-        setNearLock(dist < lockRadius * 1.8);
+    setNearLock(dist < lockRadius * 1.8);
+
+    // Check if dragging locked node into reveal zones (CALCULATED TO THE LEFT)
+    if (locked && dragging === locked) {
+      let foundZone: RevealType = null;
+      getRevealZones().forEach(zone => {
+        const zdx = newPos.x - (lockZone.x - 100);
+        const zdy = newPos.y - zone.y;
+        const zdist = Math.sqrt(zdx * zdx + zdy * zdy);
+        if (zdist < 50) foundZone = zone.id;
+      });
+      setActiveReveal(foundZone);
     }
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-     if (dragging) {
-        (e.target as Element).releasePointerCapture(e.pointerId);
+    if (dragging) {
+      (e.target as Element).releasePointerCapture(e.pointerId);
+      if (dragPos) {
+        const dx = dragPos.x - lockZone.x;
+        const dy = dragPos.y - lockZone.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
         
-        if (dragPos) {
-          const dx = dragPos.x - lockZone.x;
-          const dy = dragPos.y - lockZone.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          
-          if (locked) {
-              // If we are dragging the locked node out
-              // Threshold to release is slightly larger to prevent accidental release
-              if (dist > lockRadius * 2) {
-                  handleReset();
-              }
-              // If dropped close to center, it snaps back automatically due to state remaining 'locked'
-          } else {
-              // Standard locking logic
-              if (dist < lockRadius * 1.5) {
-                setLocked(dragging);
-              }
+        if (locked) {
+          // If dragging locked node out past reveal boundary or significant distance to right
+          if (dist > lockRadius * 3 || (dragPos.x > lockZone.x + 150)) {
+            setLocked(null);
+            setActiveReveal(null);
+          }
+        } else {
+          if (dist < lockRadius * 1.5) {
+            setLocked(dragging);
+            setActiveReveal(null);
           }
         }
-     }
+      }
+    }
     setDragging(null);
     setDragPos(null);
-    setNearLock(false);
-  };
-
-  const handleReset = () => {
-    setLocked(null);
-    setDragging(null);
-    setDragPos(null);
-    setHoveredSupport(null);
     setNearLock(false);
   };
 
@@ -286,14 +243,13 @@ export default function IModelExplainer() {
     };
   };
 
-  const transition = locked && dragging === locked ? 'none' : // Instant movement when dragging locked node
+  const transition = locked && dragging === locked ? 'none' : 
                      locked ? 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' : 
                      dragging ? 'all 0.08s ease-out' : 
                      'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative" style={{ background: 'linear-gradient(to bottom, #0f172a, #1e1b4b)' }}>
-      {/* Header - Simplified */}
       <div className="text-center px-4 pt-8 pb-4 shrink-0 z-20 relative">
         <div className={`transition-opacity duration-300 ${!locked ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
            <p className="text-sm mt-2 text-slate-400">
@@ -302,119 +258,73 @@ export default function IModelExplainer() {
         </div>
       </div>
 
-      {/* Main interactive area */}
       <div
         ref={containerRef}
-        className="flex-1 relative select-none touch-none mx-4 min-h-[300px]"
+        className="flex-1 relative select-none touch-none mx-4 min-h-[400px]"
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
       >
-        {/* Explore zone on left */}
+        {/* Lock/Explore Zone Visuals */}
         <div
           className="absolute pointer-events-none"
-          style={{
-            left: lockZone.x,
-            top: lockZone.y,
-            transform: 'translate(-50%, -50%)',
-          }}
+          style={{ left: lockZone.x, top: lockZone.y, transform: 'translate(-50%, -50%)' }}
         >
-          {/* Outer glow */}
           <div
             className="absolute rounded-full"
             style={{
-              width: 160,
-              height: 160,
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%, -50%)',
+              width: 160, height: 160, left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
               background: locked 
-                ? (nearLock && dragging === locked) || !dragging // Show glow if locked and NOT dragging away (or close enough)
+                ? (nearLock && dragging === locked) || !dragging
                     ? `radial-gradient(circle, ${colors[locked]}35 0%, transparent 65%)`
                     : 'transparent'
                 : nearLock && dragging
                     ? `radial-gradient(circle, ${colors[dragging]}30 0%, transparent 65%)`
                     : 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 65%)',
               transition: 'all 0.3s ease',
-              opacity: locked && dragging === locked && !nearLock ? 0.2 : 1 // Fade out when dragging away
+              opacity: locked && dragging === locked && !nearLock ? 0.2 : 1
             }}
           />
-          
-          {/* Middle ring */}
           {!locked && (
-            <div
-              className="absolute rounded-full"
-              style={{
-                width: nearLock ? 110 : 100,
-                height: nearLock ? 110 : 100,
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                border: `1.5px solid ${nearLock && dragging ? colors[dragging] : 'rgba(99,102,241,0.3)'}`,
-                boxShadow: nearLock && dragging 
-                  ? `0 0 25px ${colors[dragging]}50, inset 0 0 15px ${colors[dragging]}20`
-                  : '0 0 15px rgba(99,102,241,0.15)',
-                transition: 'all 0.3s ease',
-              }}
-            />
-          )}
-          
-          {/* Inner ring */}
-          {!locked && (
-            <div
-              className="absolute rounded-full"
-              style={{
-                width: nearLock ? 70 : 60,
-                height: nearLock ? 70 : 60,
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                border: `1px solid ${nearLock && dragging ? colors[dragging] : 'rgba(99,102,241,0.2)'}`,
-                transition: 'all 0.3s ease',
-              }}
-            />
-          )}
-          
-          {/* Explore label */}
-          {!locked && (
-            <div
-              className="absolute flex items-center justify-center"
-              style={{
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              <span 
-                className="text-xs font-semibold uppercase tracking-wider transition-colors duration-300"
-                style={{
-                  color: nearLock && dragging ? colors[dragging] : 'rgba(148,163,184,0.7)',
-                }}
-              >
-                Explore
-              </span>
+            <div className="absolute rounded-full flex items-center justify-center" 
+                 style={{ width: 100, height: 100, left: '50%', top: '50%', transform: 'translate(-50%, -50%)', border: '1.5px solid rgba(99,102,241,0.3)' }}>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Explore</span>
             </div>
-          )}
-
-          {/* Pulse animation when near */}
-          {nearLock && !locked && (
-            <div
-              className="absolute rounded-full animate-ping"
-              style={{
-                width: 110,
-                height: 110,
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                border: `2px solid ${dragging ? colors[dragging] : 'rgba(99,102,241,0.4)'}`,
-                opacity: 0.4,
-                animationDuration: '1.2s',
-              }}
-            />
           )}
         </div>
 
-        {/* Connection lines */}
+        {/* Reveal Zones (Only when locked - NOW ON THE LEFT) */}
+        {locked && (
+          <div className="absolute" style={{ left: lockZone.x - 100, top: 0, height: '100%', pointerEvents: 'none' }}>
+            {getRevealZones().map((zone) => {
+              const isActive = activeReveal === zone.id;
+              return (
+                <div
+                  key={zone.id}
+                  className="absolute flex items-center justify-end"
+                  style={{ top: zone.y, transform: 'translateY(-50%) translate(-100%)' }}
+                >
+                  <div
+                    className="w-20 h-20 rounded-full border border-dashed flex items-center justify-center transition-all duration-300 relative"
+                    style={{
+                      borderColor: isActive ? colors[locked] : 'rgba(255,255,255,0.1)',
+                      backgroundColor: isActive ? `${colors[locked]}20` : 'transparent',
+                      boxShadow: isActive ? `0 0 20px ${colors[locked]}40` : 'none',
+                      transform: isActive ? 'scale(1.1)' : 'scale(1)',
+                    }}
+                  >
+                    <span 
+                      className="text-[9px] uppercase font-bold text-center px-1 transition-colors duration-300"
+                      style={{ color: isActive ? colors[locked] : 'rgba(255,255,255,0.3)' }}
+                    >
+                      {zone.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         <svg width="100%" height="100%" className="absolute inset-0 pointer-events-none">
           {connections.map(([a, b], idx) => {
             if (!positions[a] || !positions[b]) return null;
@@ -435,104 +345,74 @@ export default function IModelExplainer() {
           })}
         </svg>
 
-        {/* Nodes */}
         {labels.map((label) => {
           const pos = positions[label];
           if (!pos) return null;
-          
           const isLead = locked === label;
-          const isSupport = locked && locked !== label;
-          const isHovered = hoveredSupport === label;
           const isDragging = dragging === label;
-
           return (
             <div
               key={label}
               onPointerDown={(e) => handlePointerDown(label, e)}
-              onMouseEnter={() => isSupport && setHoveredSupport(label)}
-              onMouseLeave={() => setHoveredSupport(null)}
               className="absolute flex flex-col items-center"
               style={{
-                left: pos.x,
-                top: pos.y,
-                transform: 'translate(-50%, -50%)',
-                // Disable transition if we are actively dragging this specific node (smooth drag)
+                left: pos.x, top: pos.y, transform: 'translate(-50%, -50%)',
                 transition: isDragging ? 'none' : transition,
-                zIndex: isDragging || isLead ? 10 : isHovered ? 8 : 1,
-                cursor: locked ? (isLead ? 'grab' : 'pointer') : 'grab',
+                zIndex: isDragging || isLead ? 20 : 1,
+                cursor: 'grab',
               }}
             >
               <div
                 className="rounded-full flex items-center justify-center text-white font-bold select-none"
                 style={{
-                  width: isLead ? 72 : isHovered ? 64 : 56,
-                  height: isLead ? 72 : isHovered ? 64 : 56,
-                  fontSize: isLead ? 24 : 18,
-                  backgroundColor: colors[label],
-                  boxShadow: `0 0 ${isLead ? 40 : isHovered ? 30 : 20}px ${colors[label]}${isLead ? '70' : isHovered ? '60' : '50'}`,
-                  transition: 'all 0.2s ease',
-                  fontFamily: 'Georgia, serif',
-                  // Visual hint when dragging the locked node out
-                  opacity: isDragging && isLead && !nearLock ? 0.6 : 1,
-                  transform: isDragging && isLead && !nearLock ? 'scale(0.9)' : 'scale(1)',
+                  width: isLead ? 72 : 56, height: isLead ? 72 : 56,
+                  fontSize: isLead ? 24 : 18, backgroundColor: colors[label],
+                  boxShadow: `0 0 ${isLead ? 40 : 20}px ${colors[label]}${isLead ? '70' : '50'}`,
+                  transition: 'all 0.2s ease', fontFamily: 'Georgia, serif',
                 }}
               >
                 I
               </div>
-              <span
-                className="mt-2 text-xs font-medium whitespace-nowrap px-2 py-0.5 rounded select-none pointer-events-none"
-                style={{
-                  color: isLead || isHovered ? colors[label] : 'rgba(203,213,225,0.7)',
-                  fontWeight: isLead || isHovered ? 600 : 400,
-                  backgroundColor: isLead || isHovered ? `${colors[label]}25` : 'transparent',
-                  transition: 'all 0.2s ease',
-                  opacity: isDragging && isLead ? 0 : 1 // Hide label when dragging locked node
-                }}
-              >
-                {label}
-              </span>
+              <span className="mt-2 text-xs font-medium tracking-wide text-slate-400 opacity-80">{label}</span>
             </div>
           );
         })}
       </div>
 
-      {/* Explanation area at bottom */}
-      <div className="px-4 pb-8 shrink-0 relative z-20 min-h-[180px] flex flex-col justify-end">
+      <div className="px-4 pb-8 shrink-0 relative z-20 min-h-[220px] flex flex-col justify-end">
         {locked && (
           <div
-            className="rounded-xl p-6 animate-fadeIn w-full max-w-2xl mx-auto backdrop-blur-sm"
+            className="rounded-xl p-6 animate-fadeIn w-full max-w-2xl mx-auto backdrop-blur-md"
             style={{ 
-              background: 'rgba(30, 41, 59, 0.8)',
-              borderLeft: `3px solid ${colors[locked]}`,
-              boxShadow: `0 4px 20px rgba(0,0,0,0.3), 0 0 20px ${colors[locked]}20`,
+              background: 'rgba(15, 23, 42, 0.9)',
+              border: `1px solid ${colors[locked]}40`,
+              boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 0 20px ${colors[locked]}10`,
             }}
           >
-            <p className="text-base leading-relaxed mb-4 text-slate-200">
-              <span className="font-semibold text-lg mr-1" style={{ color: colors[locked] }}>{locked}:</span>
-              {explanations[locked].main}
-            </p>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-2 h-8 rounded-full" style={{ backgroundColor: colors[locked] }} />
+              <h2 className="text-xl font-bold tracking-tight uppercase" style={{ color: colors[locked] }}>{locked} Mode</h2>
+            </div>
+
+            <div className="min-h-[100px] flex flex-col justify-center">
+              {activeReveal ? (
+                <div className="animate-revealText">
+                  <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-500 mb-2">
+                    {activeReveal === 'feelsLike' ? 'Experiential Lens' : activeReveal === 'whatItIs' ? 'Core Definition' : 'Contextual Use'}
+                  </h3>
+                  <p className="text-lg leading-relaxed text-slate-100 font-light italic">
+                    {explanations[locked][activeReveal]}
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                   <p className="text-slate-400 italic">Drag the {locked} circle into a reveal zone to see details</p>
+                </div>
+              )}
+            </div>
             
-            {hoveredSupport ? (
-              <div 
-                className="text-sm p-3 rounded-lg animate-fadeIn border border-transparent transition-colors"
-                style={{ 
-                    backgroundColor: `${colors[hoveredSupport]}18`,
-                    borderColor: `${colors[hoveredSupport]}30`
-                }}
-              >
-                <span className="font-bold mr-1" style={{ color: colors[hoveredSupport] }}>{hoveredSupport}:</span>
-                <span className="text-slate-300">{explanations[locked].others[hoveredSupport]}</span>
-              </div>
-            ) : (
-              <div className="flex items-center text-sm text-slate-400 italic">
-                <span className="inline-block w-4 h-4 rounded-full border border-slate-500 mr-2 flex items-center justify-center text-[10px]">?</span>
-                Hover over the other I's to see how they connect
-              </div>
-            )}
-            
-            {/* UPDATED RESET INSTRUCTION */}
-            <p className="mt-5 text-sm font-medium text-center animate-pulse tracking-wide" style={{ color: '#818cf8' }}>
-                ⟵ Drag the circle OUT to reset
+            <p className="mt-6 text-[10px] font-bold text-center tracking-[0.3em] uppercase text-indigo-400/60">
+                ⟵ Drag another I in to explore
             </p>
           </div>
         )}
@@ -540,10 +420,15 @@ export default function IModelExplainer() {
 
       <style>{`
         @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(6px); }
+          from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fadeIn { animation: fadeIn 0.25s ease-out; }
+        @keyframes revealText {
+          from { opacity: 0; transform: translateX(-10px); filter: blur(4px); }
+          to { opacity: 1; transform: translateX(0); filter: blur(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+        .animate-revealText { animation: revealText 0.3s ease-out forwards; }
       `}</style>
     </div>
   );
