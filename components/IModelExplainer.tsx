@@ -22,7 +22,7 @@ const explanations: Record<string, IModeData> = {
   },
   Integrity: {
     feelsLike: "Confidence that you can stand behind your choices; no ethical discomfort",
-    whatItIs: "Ensuring ethical, honest, and appropriate use. This is the mode of using AI honestly and responsibly—being transparent about its role, taking responsibility for outputs, and ensuring alignment with your values.",
+     whatItIs: "Ensuring ethical, honest, and appropriate use. This is the mode of using AI honestly and responsibly—being transparent about its role, taking responsibility for outputs, and ensuring alignment with your values.",
     whenYouUseIt: "When there are stakes—'Is this still my work?' 'Should I disclose I used AI?'"
   },
   Inquiry: {
@@ -221,17 +221,23 @@ export default function IModelExplainer() {
         
         if (locked) {
           // Keep current reveal if released inside detection radius
-          let isReleasedInZone = false;
+          let releasedZoneId: RevealType = null;
           getRevealZones().forEach(zone => {
             const zdx = dragPos.x - zone.x;
             const zdy = dragPos.y - zone.y;
             const zdist = Math.sqrt(zdx * zdx + zdy * zdy);
-            if (zdist < revealDetectionRadius) isReleasedInZone = true;
+            if (zdist < revealDetectionRadius) releasedZoneId = zone.id;
           });
 
-          // If not in a zone and dragged far enough away, unlock
-          if (!isReleasedInZone && (dist > lockRadius * 3 || dragPos.x > lockZone.x + 200)) {
+          if (releasedZoneId) {
+            // Stick to the zone that was detected on release
+            setActiveReveal(releasedZoneId);
+          } else if (dist > lockRadius * 3 || dragPos.x > lockZone.x + 200) {
+            // If not in a zone and dragged far enough away, unlock
             setLocked(null);
+            setActiveReveal(null);
+          } else {
+            // Released in center/neutral area while locked, clear reveal
             setActiveReveal(null);
           }
         } else {
