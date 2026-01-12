@@ -127,10 +127,8 @@ export default function IModelExplainer() {
     if (locked) {
       const lockedPositions = getTargetPositions(locked);
       if (dragging === locked && dragPos) {
-        // While dragging, follow pointer exactly
         lockedPositions[locked] = dragPos;
       } else {
-        // When not dragging, lead label always returns to lockZone center (Bounce-back)
         lockedPositions[locked] = { x: lockZone.x, y: lockZone.y };
       }
       return lockedPositions;
@@ -200,7 +198,6 @@ export default function IModelExplainer() {
       if (foundZone) {
         setActiveReveal(foundZone);
       } else if (activeReveal) {
-        // Sticky behavior: Only deactivate if user drags significantly away from the current active zone
         const currentZone = getRevealZones().find(z => z.id === activeReveal);
         if (currentZone) {
           const czdx = newPos.x - currentZone.x;
@@ -232,14 +229,11 @@ export default function IModelExplainer() {
           });
 
           if (releasedZoneId) {
-            // Success: Keep reveal active but circle bounces back (handled in getPositions)
             setActiveReveal(releasedZoneId);
           } else if (dist > lockRadius * 3 || dragPos.x > lockZone.x + 200) {
-            // Unlocking path
             setLocked(null);
             setActiveReveal(null);
           } else {
-            // Neutral release: Bounce back to center, hide reveal
             setActiveReveal(null);
           }
         } else {
@@ -274,19 +268,17 @@ export default function IModelExplainer() {
     };
   };
 
-  // Ensure "locked" transition is applied to bounce-back animation
   const transition = dragging ? 'none' : 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative" style={{ background: 'linear-gradient(to bottom, #0f172a, #1e1b4b)' }}>
       <div className="absolute top-0 left-0 w-full pt-8 z-30 pointer-events-none text-center">
         <h1 className="text-2xl font-light tracking-[0.4em] text-white/90 uppercase">The I-Model</h1>
-      </div>
-
-      <div className="text-center px-4 pt-20 pb-4 shrink-0 z-20 relative">
-        <div className={`transition-opacity duration-300 ${!locked ? 'opacity-100' : 'opacity-0 h-0 overflow-hidden'}`}>
-           <p className="text-sm mt-2 text-slate-400">
-            Drag an I-Mode to the Explore zone
+        <div className="mt-2 transition-opacity duration-300">
+           <p className="text-sm text-slate-400">
+            {locked 
+              ? "Drag the I-Mode out of the Explore Zone to explore another I-Mode"
+              : "Drag an I-Mode to the Explore zone"}
            </p>
         </div>
       </div>
@@ -469,17 +461,8 @@ export default function IModelExplainer() {
                 <p className="text-base leading-relaxed text-slate-200 font-light">
                   {explanations[locked].whatItIs}
                 </p>
-                {!activeReveal && (
-                  <p className="mt-4 text-[10px] text-slate-400 italic tracking-widest uppercase">
-                    Drag the {locked} circle left to see "Feels Like" or "When You Use It"
-                  </p>
-                )}
               </div>
             </div>
-            
-            <p className="mt-6 text-[10px] font-bold text-center tracking-[0.3em] uppercase text-slate-500/60">
-                ⟵ Drag another I-Mode to explore
-            </p>
           </div>
         )}
       </div>
