@@ -772,7 +772,7 @@ export default function IModelExplainer() {
             <h1 className="text-lg font-thin tracking-[0.5em] text-white/60 uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.5em' }}>The I-Model</h1>
           </div>
           <div className="absolute bottom-0 right-6 z-30 pointer-events-none">
-            <p className="text-lg font-thin tracking-[0.1em] text-white/60 lowercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.1em' }}>drag a mode into the explore button to understand more about it</p>
+            <p className="text-lg font-thin tracking-[0.1em] text-white/60 lowercase leading-relaxed" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.1em', maxWidth: '200px', textAlign: 'right' }}>drag a mode into the<br />explore button</p>
           </div>
         </>
       )}
