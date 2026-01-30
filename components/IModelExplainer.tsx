@@ -541,9 +541,9 @@ export default function IModelExplainer() {
   const getRevealZones = () => {
     // Three bubbles vertically separated: Without This I (top), The Question (middle), With This I (bottom)
     const spacing = 120; // vertical spacing between bubbles
-    const topBubbleY = webCenterY - spacing;
-    const middleBubbleY = webCenterY;
-    const bottomBubbleY = webCenterY + spacing;
+    const topBubbleY = webCenterY - spacing - 40;
+    const middleBubbleY = webCenterY - 40;
+    const bottomBubbleY = webCenterY + spacing - 40;
 
     if (viewMode === 'scenario') {
       return [
@@ -553,8 +553,8 @@ export default function IModelExplainer() {
       ];
     }
     return [
-      { id: 'feelsLike' as const, label: 'Feels Like', y: topCircleY, x: lockZone.x - 140 },
-      { id: 'whenYouUseIt' as const, label: 'When You Use It', y: bottomCircleY, x: lockZone.x - 140 }
+      { id: 'feelsLike' as const, label: 'Feels Like', y: topBubbleY, x: lockZone.x - 140 },
+      { id: 'whenYouUseIt' as const, label: 'When You Use It', y: bottomBubbleY, x: lockZone.x - 140 }
     ];
   };
 
@@ -679,7 +679,7 @@ export default function IModelExplainer() {
     setNearLock(dist < lockRadius * 1.8);
 
     if (locked && dragging === locked) {
-      let foundZone: RevealType = null;
+      let foundZone: RevealType | ScenarioRevealType = null;
       getRevealZones().forEach(zone => {
         const zdx = newPos.x - zone.x;
         const zdy = newPos.y - zone.y;
