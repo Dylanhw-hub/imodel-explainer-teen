@@ -60,107 +60,107 @@ interface ScenarioData {
 }
 
 const scenarios: Record<string, ScenarioData> = {
-  teacher: {
-    title: "Lesson Planning",
-    description: "A history teacher needs to plan a lesson on the French Revolution. She opens ChatGPT and types: 'Create a lesson plan on the causes of the French Revolution.' What AI gives her: A perfectly adequate lesson plan. Three causes: economic inequality, Enlightenment ideas, political crisis. Activities: read a text, answer comprehension questions, group discussion. It's fine. It would work. Which I-Mode should guide her next move?",
+  researchWriting: {
+    title: "Research & Writing",
+    description: "You're writing an essay for class. You open ChatGPT to help with research and drafting. You know you need to submit something that's actually yours, but you also know AI could make it faster and better. How do you make the right call?",
     modes: {
       Intentionality: {
-        withoutThisI: "You accept a generic lesson that ticks curriculum boxes but doesn't connect with your students",
-        theQuestion: "What am I actually trying to create? Not 'teach the French Revolution'—what do I want students to feel?",
-        withThisI: "You ask for something that makes economic injustice visceral and connects to students' lives today"
+        withoutThisI: "You dump the essay prompt into AI, get back a perfect essay, copy it in, submit. You have no idea what you actually think about the topic.",
+        theQuestion: "What am I actually trying to learn here? Am I using AI to understand the topic, or just to get it done?",
+        withThisI: "You use AI to find sources and brainstorm ideas, but you decide YOUR argument. You're clear on what you're trying to prove."
       },
       Integrity: {
-        withoutThisI: "You present AI-generated content as your own teaching without acknowledging where ideas came from",
-        theQuestion: "Is this still my lesson? Am I being honest about how I'm using this tool?",
-        withThisI: "You use AI as a brainstorming partner, but the pedagogy and final design remain authentically yours"
+        withoutThisI: "The AI-written paragraphs are so good you just keep them. Your teacher reads something that sounds nothing like you. You haven't disclosed you used AI.",
+        theQuestion: "If I submit this, would I be honest about how much AI wrote vs. how much is actually me?",
+        withThisI: "You use AI as a starting point, rewrite it in your own words, and mention in a note that you used it to brainstorm. Your work is yours."
       },
       Inquiry: {
-        withoutThisI: "You accept a plan that ignores what you know about your specific students—their struggles, context, what actually lands",
-        theQuestion: "What do I know about my students that should shape this? What will actually work for Year 9?",
-        withThisI: "You probe deeper: 'What hooks these specific students?' 'How do I make this feel relevant?' and get something useful"
+        withoutThisI: "AI gives you an answer, it sounds smart, you assume it's right and move on. You never check if the sources are real or if the logic actually makes sense.",
+        theQuestion: "Am I actually thinking critically about what AI gives me, or just accepting it because it sounds polished?",
+        withThisI: "You question what AI writes. You fact-check the sources, you test the arguments, you push back if something doesn't add up. You end up with something way better."
       },
       Intuition: {
-        withoutThisI: "You use a plan that looks fine on paper but misses something important about how your students learn",
-        theQuestion: "Something feels generic about this. What's my gut telling me? Do I trust that feeling?",
-        withThisI: "You trust your instinct that the plan lacks depth and push for something with more authenticity"
+        withoutThisI: "Something about the AI's take on the topic feels off to you, but it's so well-written you ignore that feeling and use it anyway. Later you realize it missed something crucial.",
+        theQuestion: "What is my gut telling me about this? Does something feel incomplete or wrong, even if I can't explain why yet?",
+        withThisI: "You listen to that instinct. You dig deeper into the part that felt off. You discover AI missed an important perspective, and you add it. Your essay is stronger because you trusted yourself."
       }
     }
   },
-  principal: {
-    title: "Staff Development",
-    description: "A principal gets a directive from the board: 'Teachers need training on AI tools.' First impulse: Book an external provider. Get someone to show teachers how ChatGPT works. Tick the box. Move on. Which I-Mode should guide her decision?",
+  creativeProject: {
+    title: "Creative Project",
+    description: "You're making a digital art piece or music for a project. You use AI to help generate ideas, create assets, or remix sounds. But it has to feel like YOUR work. Where's the line between using a tool and losing your voice?",
     modes: {
       Intentionality: {
-        withoutThisI: "You book generic training that wastes time and money because it doesn't address what your staff actually need",
-        theQuestion: "What's the actual goal? Not 'AI training'—what are my teachers struggling with?",
-        withThisI: "You realize different staff need different things: veterans need reassurance, early-career teachers need boundaries. You create targeted conversations instead"
+        withoutThisI: "You ask AI to 'make me a cool digital art piece' and use whatever it spits out. It looks good but it's not actually expressing anything YOU care about.",
+        theQuestion: "What am I actually trying to create? What do I want people to feel or understand when they see/hear this?",
+        withThisI: "You know exactly what you want to express first. You use AI as a tool to help execute YOUR vision, not replace it. People can tell it's authentically yours."
       },
       Integrity: {
-        withoutThisI: "You follow the board's directive without checking if it actually serves your teachers",
-        theQuestion: "Am I making this decision based on what's best for my staff, or just ticking a box?",
-        withThisI: "You listen to staff concerns first, then design something that addresses real anxieties and honors their expertise"
+        withoutThisI: "You generate an image with AI, barely touch it, and submit it as your own creative work without mentioning AI was involved. People think you made the whole thing.",
+        theQuestion: "Am I being honest about what AI did and what I did? Would I feel okay if people knew the real breakdown?",
+        withThisI: "You're clear about your process. Maybe you generated a base layer with AI and painted over it, or you remixed AI sounds but added your own production. You own that hybrid process."
       },
       Inquiry: {
-        withoutThisI: "You book a workshop that misses the real tensions—what's actually making your teachers anxious or excited",
-        theQuestion: "What are my teachers experiencing? What am I hearing in the corridors? What do they actually need?",
-        withThisI: "You spend a week listening through coffee conversations and discover the real issues are about pedagogy and consistency, not technology"
+        withoutThisI: "AI gives you a cool result and you're like 'done.' You never experiment, never push it further, never ask 'what if I tried this instead?'",
+        theQuestion: "What would happen if I pushed this further? What am I not exploring? What's the next level here?",
+        withThisI: "You treat AI as a starting point, not an endpoint. You play with different prompts, combine outputs, layer ideas. You end up somewhere way more interesting than what AI gave you first."
       },
       Intuition: {
-        withoutThisI: "You book training that looks impressive on paper but doesn't fit your school's culture or staff needs",
-        theQuestion: "This proposal looks polished, but do I trust it? What does my experience tell me will actually work here?",
-        withThisI: "You trust your instinct that one-size-fits-all won't work and invest in conversations and a shared framework instead"
+        withoutThisI: "AI makes something technically perfect but it feels soulless. You can't put your finger on why, so you submit it anyway because at least it's done.",
+        theQuestion: "Does this actually FEEL like me? Does it have the thing I was going for, or does something feel missing?",
+        withThisI: "You listen to that emptiness. You add a human touch—a brushstroke, a lyric, a glitch, a sample. Suddenly it has character. It feels alive because it's genuinely yours."
       }
     }
   },
-  parent: {
-    title: "Homework Help",
-    description: "A parent's 14-year-old has a history essay due tomorrow. The topic: 'How did World War I change society?' The student has done research but is stuck on how to structure the essay. The temptation: The parent thinks: 'I could just ask ChatGPT to write an outline. Or even the whole thing. She can read it, learn from it, submit it. She's tired. I'm tired. The teacher will never know.' It would be so easy. Which I-Mode should guide her choice?",
+  examPrep: {
+    title: "Exam & Test Prep",
+    description: "You have a big exam coming up. You're tempted to use AI to write practice answers or summaries, but you're worried about actually learning vs. just getting the grade. How do you prep in a way you can actually trust?",
     modes: {
       Intentionality: {
-        withoutThisI: "You use AI in ways that help her finish quickly but undermine her learning to write",
-        theQuestion: "What am I actually trying to achieve? Help her finish, or help her learn?",
-        withThisI: "You recognize those are different goals and choose to support her thinking process, not just her productivity"
+        withoutThisI: "You use AI to generate practice exam answers and just read them. You feel prepared on test day but freeze when the question is worded slightly differently because you never actually understood the concepts.",
+        theQuestion: "Do I actually understand this material, or do I just think I do because AI explained it to me?",
+        withThisI: "You use AI to quiz yourself, explain topics back to it, and find gaps in your understanding. You study the parts you actually struggle with. You're genuinely prepared."
       },
       Integrity: {
-        withoutThisI: "AI writes the essay, she submits it as her own. Easy. Quick. But what are you teaching her about honesty?",
-        theQuestion: "What standard am I holding right now? What lesson about integrity is she learning from me?",
-        withThisI: "You choose not to take the shortcut—not because you won't help, but because you want her to know what doing her own work means"
+        withoutThisI: "You generate an answer with AI during the exam using your phone. Technically against the rules. You get a good grade but you know it's not really your knowledge.",
+        theQuestion: "If I use AI during the test, am I cheating? And more importantly—what message am I sending myself about what I'm capable of?",
+        withThisI: "You use AI to study beforehand, but you go into the exam knowing you're going in solo. You own your result, whatever it is. That feels honest."
       },
       Inquiry: {
-        withoutThisI: "An AI-generated essay might be perfect structurally but miss what she actually understands about the topic",
-        theQuestion: "What does she actually need help with? Not the whole essay—what's the real blocker here?",
-        withThisI: "You ask better questions: 'What are the three biggest changes?' 'How would you explain that to a friend?' and help her find the structure"
+        withoutThisI: "AI gives you the 'correct' answer format. You memorize it and regurgitate it on the test. You pass but you have no idea how to apply this knowledge to anything else.",
+        theQuestion: "Do I understand WHY this is the answer, or just what the answer is? Can I explain this to someone else?",
+        withThisI: "You use AI to dig deeper into the WHY. You ask follow-up questions. You work through practice problems and actually think through them. You can handle variations on test day."
       },
       Intuition: {
-        withoutThisI: "You take the easy path that feels wrong—undermining something important about her learning and integrity",
-        theQuestion: "This feels like a shortcut. What does my gut tell me about what she needs from me right now?",
-        withThisI: "You trust that feeling and sit with her through the struggle—which is where real learning happens"
+        withoutThisI: "You feel like you're ready because you've done a lot of cramming with AI summaries, but there's a nagging doubt. You push it down and go in anyway. Test day hits different and you realize you're not actually ready.",
+        theQuestion: "Honestly, do I feel prepared? Or do I just feel like I've done a lot of work?",
+        withThisI: "You listen to that doubt. It's telling you something. You take a different approach—less AI-generated summaries, more active practice. You actually feel confident going in."
       }
     }
   },
-  governor: {
-    title: "Budget Decision",
-    description: "The school's governing board is reviewing budget proposals. The head of IT presents: an AI-powered learning platform for all students. The platform promises 'personalized learning pathways,' 'real-time progress tracking,' 'engagement analytics.' The cost is significant but not unreasonable. The presentation is polished. The data looks impressive. The pitch: 'This is the future of education. Schools that don't invest in AI will fall behind. Our students deserve the best technology.' Which I-Mode should guide the board's decision?",
+  editingRefining: {
+    title: "Saving Time & Editing",
+    description: "You've written something (essay, application, social media post, message to someone important) and you're using AI to help you edit and refine it. But you're worried about how much of it becomes AI-written. Where do you draw the line?",
     modes: {
       Intentionality: {
-        withoutThisI: "You approve spending based on impressive features rather than actual school needs",
-        theQuestion: "What problem are we actually trying to solve? What do our students and teachers need?",
-        withThisI: "You ask what teachers actually need and discover they want time to develop approaches, not another platform to manage"
+        withoutThisI: "You use AI to 'improve' your writing completely. It's more polished, but it doesn't sound like you anymore. An adult reads it and asks 'did you actually write this?'",
+        theQuestion: "What am I really trying to say here? Do I want to sound polished or do I want to sound like me?",
+        withThisI: "You decide first: is this about being perfect, or about being authentic? If you choose authentic, you use AI lightly. If you choose perfect, you know you're trading some of your voice for it."
       },
       Integrity: {
-        withoutThisI: "You approve the budget because it looks innovative, without checking if it truly serves students and staff",
-        theQuestion: "Does this serve our school community, or does it just look impressive? Are we being honest about needs vs. wants?",
-        withThisI: "You hold the line—asking whether this aligns with the school's actual values and priorities before committing resources"
+        withoutThisI: "AI rewrites half your college application essay. It sounds incredible. You submit it knowing it's not entirely your words. You get in but you're not sure if it's because of you or because of AI.",
+        theQuestion: "How much of this is actually me vs. AI? If I got in, what did I really earn?",
+        withThisI: "You use AI to catch grammar and suggest restructuring, but the ideas and voice stay yours. When you succeed, you know it's because of you."
       },
       Inquiry: {
-        withoutThisI: "You approve based on a polished presentation without investigating what teachers and students actually experience",
-        theQuestion: "Have we consulted teachers? Piloted this? What evidence do we have that this solves a real problem?",
-        withThisI: "You discover there's been no teacher consultation, no pilot, and the 'problem' is vague. You request proper investigation first"
+        withoutThisI: "AI suggests edits and you accept all of them without thinking about whether they actually improve what you're trying to say. You end up with something technically better but weaker in impact.",
+        theQuestion: "Does this edit actually make my point stronger, or does it just make it sound fancier? What am I trying to communicate?",
+        withThisI: "You think critically about each suggestion. You keep some edits, reject others, modify some. You end up with something polished AND powerful because it's genuinely better, not just different."
       },
       Intuition: {
-        withoutThisI: "You ignore that uneasy feeling and approve something that looks right on paper but feels wrong",
-        theQuestion: "This sounds impressive, but something feels off. What is my experience telling me?",
-        withThisI: "You trust your instinct that something's not right and ask the hard questions about implementation and real impact"
+        withoutThisI: "AI changes a sentence and it reads smoother, but something about it doesn't feel right to you. You can't articulate why, so you go with AI's version. Later you wish you'd trusted your gut.",
+        theQuestion: "Does this change feel right? Even if I can't explain it, does my instinct say to keep my version or accept the edit?",
+        withThisI: "You trust that instinct. Sometimes you're right—your original phrasing hit harder. Sometimes you're wrong—the edit actually was better. But you're making active choices, not just accepting AI's version."
       }
     }
   }
@@ -480,7 +480,7 @@ export default function IModelExplainer() {
   const [nearLock, setNearLock] = useState<boolean>(false);
   const [activeReveal, setActiveReveal] = useState<RevealType | ScenarioRevealType>(null);
   const [viewMode, setViewMode] = useState<'explainer' | 'scenario'>('explainer');
-  const [currentScenario, setCurrentScenario] = useState<string>('teacher');
+  const [currentScenario, setCurrentScenario] = useState<string>('researchWriting');
   const [activeModes, setActiveModes] = useState<string[]>([]);
   const [showQuestions, setShowQuestions] = useState<boolean>(false);
 
@@ -784,63 +784,50 @@ export default function IModelExplainer() {
         </>
       )}
 
-      {/* Scenario Tabs - Bottom Left and Right - Letter Only */}
+      {/* Scenario Tabs - Bottom Left and Back Button */}
       {viewMode === 'scenario' && (
         <>
-          <div className="absolute bottom-6 left-6 z-30 flex gap-3 pointer-events-auto">
-            {[
-              { id: 'teacher', label: 'T' },
-              { id: 'principal', label: 'P' }
-            ].map(role => (
-              <button
-                key={role.id}
-                onClick={() => {
-                  setCurrentScenario(role.id as string);
-                  setLocked(null);
-                  setActiveReveal(null);
-                }}
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-light transition-all duration-300 backdrop-blur-sm ${
-                  currentScenario === role.id
-                    ? 'shadow-lg scale-110'
-                    : 'opacity-50 hover:opacity-75'
-                }`}
-                style={{
-                  backgroundColor: currentScenario === role.id ? 'rgba(168, 85, 247, 0.4)' : 'rgba(100, 116, 139, 0.15)',
-                  border: currentScenario === role.id ? '2px solid #a855f7' : '1px solid rgba(255,255,255,0.15)',
-                  color: currentScenario === role.id ? '#a855f7' : 'rgba(255,255,255,0.5)',
-                  letterSpacing: '0.05em'
-                }}
-              >
-                {role.label}
-              </button>
-            ))}
+          <div className="absolute bottom-6 left-6 z-30 flex gap-2 pointer-events-auto">
+            <button
+              onClick={() => {
+                setViewMode('explainer');
+                setLocked(null);
+                setActiveReveal(null);
+              }}
+              className="px-4 py-2 text-sm font-thin tracking-[0.05em] text-white/60 lowercase hover:text-white/90 transition-colors duration-300 backdrop-blur-sm rounded-lg border border-white/20 hover:border-white/50"
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: 'rgba(100, 116, 139, 0.1)' }}
+            >
+              ← back to model
+            </button>
           </div>
 
-          <div className="absolute bottom-6 right-6 z-30 flex gap-3 pointer-events-auto">
+          <div className="absolute bottom-6 right-6 z-30 flex gap-2 pointer-events-auto flex-wrap justify-end max-w-xs">
             {[
-              { id: 'parent', label: 'Pa' },
-              { id: 'governor', label: 'G' }
-            ].map(role => (
+              { id: 'researchWriting', label: 'Research & Writing' },
+              { id: 'creativeProject', label: 'Creative Project' },
+              { id: 'examPrep', label: 'Exam Prep' },
+              { id: 'editingRefining', label: 'Saving Time & Editing' }
+            ].map(scenario => (
               <button
-                key={role.id}
+                key={scenario.id}
                 onClick={() => {
-                  setCurrentScenario(role.id as string);
+                  setCurrentScenario(scenario.id as string);
                   setLocked(null);
                   setActiveReveal(null);
                 }}
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-light transition-all duration-300 backdrop-blur-sm ${
-                  currentScenario === role.id
-                    ? 'shadow-lg scale-110'
-                    : 'opacity-50 hover:opacity-75'
+                className={`px-3 py-2 text-xs font-thin tracking-[0.05em] lowercase transition-all duration-300 backdrop-blur-sm rounded-lg ${
+                  currentScenario === scenario.id
+                    ? 'shadow-lg'
+                    : 'opacity-60 hover:opacity-80'
                 }`}
                 style={{
-                  backgroundColor: currentScenario === role.id ? 'rgba(168, 85, 247, 0.4)' : 'rgba(100, 116, 139, 0.15)',
-                  border: currentScenario === role.id ? '2px solid #a855f7' : '1px solid rgba(255,255,255,0.15)',
-                  color: currentScenario === role.id ? '#a855f7' : 'rgba(255,255,255,0.5)',
-                  letterSpacing: '0.05em'
+                  backgroundColor: currentScenario === scenario.id ? 'rgba(168, 85, 247, 0.3)' : 'rgba(100, 116, 139, 0.1)',
+                  border: currentScenario === scenario.id ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.15)',
+                  color: currentScenario === scenario.id ? '#a855f7' : 'rgba(255,255,255,0.6)',
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
                 }}
               >
-                {role.label}
+                {scenario.label}
               </button>
             ))}
           </div>
