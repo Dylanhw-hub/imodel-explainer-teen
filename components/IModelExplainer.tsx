@@ -771,8 +771,15 @@ export default function IModelExplainer() {
           <div className="absolute bottom-0 left-6 z-30 pointer-events-none">
             <h1 className="text-lg font-thin tracking-[0.5em] text-white/60 uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.5em' }}>The I-Model</h1>
           </div>
-          <div className="absolute bottom-0 right-6 z-30 pointer-events-none">
+          <div className="absolute bottom-0 right-6 z-30 pointer-events-auto flex flex-col items-end gap-3">
             <p className="text-lg font-thin tracking-[0.1em] text-white/60 lowercase leading-relaxed" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.1em', maxWidth: '200px', textAlign: 'right' }}>drag a mode into the<br />explore button</p>
+            <button
+              onClick={() => setViewMode('scenario')}
+              className="text-sm font-thin tracking-[0.05em] text-white/50 lowercase hover:text-white/70 transition-colors duration-300 cursor-pointer"
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.05em', background: 'none', border: 'none', padding: 0 }}
+            >
+              when you're ready to explore the scenarios
+            </button>
           </div>
         </>
       )}
@@ -1052,28 +1059,6 @@ export default function IModelExplainer() {
         ) : null}
       </div>
 
-      {/* View Mode Toggle Button */}
-      <button
-        onClick={() => {
-          setViewMode(viewMode === 'explainer' ? 'scenario' : 'explainer');
-          setLocked(null);
-          setActiveReveal(null);
-          setDragging(null);
-          setDragPos(null);
-          setActiveModes([]);
-        }}
-        className="absolute top-8 left-8 z-40 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
-        style={{
-          width: 50,
-          height: 50,
-          backgroundColor: '#a855f7',
-          boxShadow: `0 0 25px #a855f730`,
-          cursor: 'pointer'
-        }}
-        title={viewMode === 'explainer' ? 'Open Scenario' : 'Back to Explainer'}
-      >
-        <span className="text-white font-bold text-2xl">⚙</span>
-      </button>
 
       <style>{`
         @keyframes fadeIn {
