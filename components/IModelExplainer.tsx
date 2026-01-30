@@ -771,14 +771,14 @@ export default function IModelExplainer() {
           <div className="absolute bottom-0 left-6 z-30 pointer-events-none">
             <h1 className="text-lg font-thin tracking-[0.5em] text-white/60 uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.5em' }}>The I-Model</h1>
           </div>
-          <div className="absolute bottom-0 right-6 z-30 pointer-events-auto flex flex-col items-end gap-3">
+          <div className="absolute bottom-12 right-6 z-30 pointer-events-auto flex flex-col items-end gap-4">
             <p className="text-lg font-thin tracking-[0.1em] text-white/60 lowercase leading-relaxed" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.1em', maxWidth: '200px', textAlign: 'right' }}>drag a mode into the<br />explore button</p>
             <button
               onClick={() => setViewMode('scenario')}
               className="text-sm font-thin tracking-[0.05em] text-white/50 lowercase hover:text-white/70 transition-colors duration-300 cursor-pointer"
-              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.05em', background: 'none', border: 'none', padding: 0 }}
+              style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.05em', background: 'none', border: 'none', padding: 0, maxWidth: '200px', textAlign: 'right' }}
             >
-              when you're ready to explore the scenarios
+              when you're ready to<br /><span style={{ textShadow: '0 0 15px rgba(168, 85, 247, 0.6)' }}>explore the scenarios</span>
             </button>
           </div>
         </>
