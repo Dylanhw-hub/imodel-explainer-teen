@@ -468,7 +468,7 @@ interface Position {
   y: number;
 }
 
-type RevealType = 'feelsLike' | 'whenYouUseIt' | null;
+type RevealType = 'feelsLike' | 'questionsToAsk' | 'whenYouUseIt' | null;
 type ScenarioRevealType = 'withoutThisI' | 'theQuestion' | 'withThisI' | null;
 
 export default function IModelExplainer() {
@@ -554,6 +554,7 @@ export default function IModelExplainer() {
     }
     return [
       { id: 'feelsLike' as const, label: 'Feels Like', y: topBubbleY, x: lockZone.x - 140 },
+      { id: 'questionsToAsk' as const, label: 'Questions to Ask', y: middleBubbleY, x: lockZone.x - 140 },
       { id: 'whenYouUseIt' as const, label: 'When You Use It', y: bottomBubbleY, x: lockZone.x - 140 }
     ];
   };
@@ -764,11 +765,16 @@ export default function IModelExplainer() {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden relative" style={{ background: 'linear-gradient(to bottom, #0f172a, #1e1b4b)' }}>
-      {/* Left-aligned heading in explainer mode */}
+      {/* Left-aligned heading and right-aligned instructions in explainer mode */}
       {viewMode !== 'scenario' && (
-        <div className="absolute bottom-0 left-6 z-30 pointer-events-none">
-          <h1 className="text-lg font-thin tracking-[0.5em] text-white/60 uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.5em' }}>The I-Model</h1>
-        </div>
+        <>
+          <div className="absolute bottom-0 left-6 z-30 pointer-events-none">
+            <h1 className="text-lg font-thin tracking-[0.5em] text-white/60 uppercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.5em' }}>The I-Model</h1>
+          </div>
+          <div className="absolute bottom-0 right-6 z-30 pointer-events-none">
+            <p className="text-lg font-thin tracking-[0.1em] text-white/60 lowercase" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', letterSpacing: '0.1em' }}>drag a mode into the explore button to understand more about it</p>
+          </div>
+        </>
       )}
 
       {/* Scenario Tabs - Bottom Left and Right - Letter Only */}
@@ -892,12 +898,22 @@ export default function IModelExplainer() {
               >
                 {viewMode === 'scenario'
                   ? (activeReveal === 'withoutThisI' ? 'Without This I-Mode' : activeReveal === 'theQuestion' ? 'The Question' : 'With This I-Mode')
-                  : (activeReveal === 'feelsLike' ? 'Feels Like' : 'When You Use It')
+                  : (activeReveal === 'feelsLike' ? 'Feels Like' : activeReveal === 'questionsToAsk' ? 'Questions to Ask' : 'When You Use It')
                 }
               </h3>
-              <p className="text-2xl leading-relaxed text-slate-50 font-extralight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
-                {currentContent[locked][activeReveal]}
-              </p>
+              {activeReveal === 'questionsToAsk' && viewMode === 'explainer' ? (
+                <ul className="text-2xl leading-relaxed text-slate-50 font-extralight space-y-3" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+                  {explanations[locked].coreQuestions.map((question, index) => (
+                    <li key={index} className="list-disc list-inside">
+                      {question}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-2xl leading-relaxed text-slate-50 font-extralight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+                  {currentContent[locked][activeReveal]}
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -1027,43 +1043,9 @@ export default function IModelExplainer() {
 
             <div className="flex flex-col justify-center">
               <div key="definition" className="animate-revealText">
-                {!showQuestions ? (
-                  <div className="flex items-start gap-4">
-                    <p className="text-2xl leading-relaxed text-slate-50 font-extralight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
-                      {(currentContent[locked] as any).definition}
-                    </p>
-                    <button
-                      onClick={() => setShowQuestions(true)}
-                      className="flex-shrink-0 w-5 h-5 mt-2 transition-all duration-300 hover:scale-110"
-                      style={{
-                        background: `radial-gradient(circle, ${colors[locked]}ff 0%, ${colors[locked]}80 70%)`,
-                        borderRadius: '50%',
-                        boxShadow: `0 0 20px ${colors[locked]}80, inset 0 0 10px ${colors[locked]}40`,
-                        cursor: 'pointer'
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div>
-                    <button
-                      onClick={() => setShowQuestions(false)}
-                      className="mb-4 flex-shrink-0 w-5 h-5 transition-all duration-300 hover:scale-110"
-                      style={{
-                        background: `radial-gradient(circle, ${colors[locked]}ff 0%, ${colors[locked]}80 70%)`,
-                        borderRadius: '50%',
-                        boxShadow: `0 0 20px ${colors[locked]}80, inset 0 0 10px ${colors[locked]}40`,
-                        cursor: 'pointer'
-                      }}
-                    />
-                    <div className="mt-4 space-y-4">
-                      {(currentContent[locked] as any).coreQuestions.map((question: string, idx: number) => (
-                        <p key={idx} className="text-2xl leading-relaxed text-slate-100 font-extralight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', fontStyle: 'italic' }}>
-                          "{question}"
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <p className="text-2xl leading-relaxed text-slate-50 font-extralight" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }}>
+                  {(currentContent[locked] as any).definition}
+                </p>
               </div>
             </div>
           </div>
